@@ -1,14 +1,12 @@
 # What does it do?
-Creates the hello-world application which is a 3 replicas simple nginx http server that uses a headless network configuration. 
-In addition it creates a HAproxy load balancer which resolves the hello-world application through any one of the pod IPs which are part of the service headless endpoint.
+This configuration deploys the hello-world application, consisting of a simple nginx HTTP server with 3 replicas, each using a headless network configuration. Additionally, it sets up an HAProxy load balancer responsible for resolving the hello-world application through any of the pod IPs associated with the service's headless endpoin
 
 ## How does DNS resolution work?
-There is no magic DNS server setup in place, but rather a neat workaround for fast deployments/ POC.
-By using a service headless setup together with HAproxy pods are created using a predictable domain name which is then resolved roundrobin with any of the service endpoint pods IP.
+Instead of relying on a traditional DNS server setup, this implementation employs a easy workaround designed for rapid deployments or proof-of-concept scenarios. Through a headless service setup combined with HAProxy pods, a predictable domain name is assigned to each pod. This domain name is then resolved in a round-robin fashion with the IP addresses of the pods associated with the service endpoint.
 
 ## Replica naming predictability
-From the headless service code below we can see that the endpoint name is *www*. 
-This mean that replicas of the hello-world application will be named *www0*, *www1* and *www2*.
+The code below shows the endpoint name for our hello-world application is *www*. 
+As result of this, replicas of the hello-world application will follow a predictable naming pattern, specifically `www0`, `www1`, and `www2`.
 ```
 apiVersion: v1
 kind: Service
@@ -23,7 +21,7 @@ spec:
       port: 80
       targetPort: 80
 ```
-The `www` endpoint can be verified using the `kubectl get endpoints` command
+Endpoint routes can be shown by using the `kubectl get endpoints` command
 ```
 NAME          ENDPOINTS                                   AGE
 kubernetes    172.12.0.200:6443                           20d
@@ -31,17 +29,16 @@ hello-world   10.42.1.55:80,10.42.3.32:80,10.42.4.36:80   5d23h
 www           10.42.1.55:80,10.42.3.32:80,10.42.4.36:80   3h2m
 ```
 ## HAproxy loadbalancer not so dynamic resolution
-As stated above this application is not using any fancy DNS server setup to magically resolve the pods, but instead relies on the headless service naming convention together with the `server-template` option in haproxy.cfg, plus a static domain name for **k3s.intranet.local** which points to any of the pods `www` endpoint IP.
+Instead of relying on an intricate DNS server setup for dynamic pod resolution, this application employs a straightforward approach. It capitalizes on the headless service's naming convention, together with the `server-template` option in `haproxy.cfg`. Additionally, a static domain name, **k3s.intranet.local**, is configured to point to the IP of any pod within the `www` endpoint.
 
-The `server-template` option found in haproxy.cfg basically tells the load balancer to resolve 3 `www` domain name under the **k3s.intranet.local**  FQDN.
-Because of this it will use the naming convention applied with the headless service. 
+The `server-template` option in `haproxy.cfg` instructs the load balancer to resolve the `www` replica domain names under the `k3s.intranet.local` FQDN. The `value number 3` refers to the number of replicas and their associated domain names.
 ``` 
 backend hello-world
       balance roundrobin
       server-template www 3 k3s.intranet.local:80 check
 ```
 
-In addition we add **k3s.intranet.local** to the HAproxy pod's /etc/hosts in order to resolve any of the pods `www` endpoint IP. The loadbalancer will then go roundrobin between the replicas.
+Furthermore, **k3s.intranet.local** is added to the HAProxy's `/etc/hosts` file to enable the resolution of any of the pod's `www` endpoint IPs. This ensures that the load balancer can perform round-robin distribution across the replicas
 ```
 apiVersion: v1
 kind: ConfigMap
@@ -52,6 +49,5 @@ data:
     10.42.1.55 k3s.intranet.local
 ```
 
-## Is this all DNS resolution thing not inconvenient?
-In a sense it is as you need to either delay the deployment of haproxy or delete it and redeploy it as soon as you have one of the pods `www` endpoint IP.
-On the positive side it saves you a bit of time by not having to declare each replica manually in haproxy.cfg, which it may not sound like a big deal for just 3 replicas, but imagine if you had dozens? It also saves you some time ....
+## How is this not inconvenient?
+In a way, it can be, as you either need to delay the deployment of HAProxy or delete and redeploy it after having edited the `haproxy.cfg configMap`. On the positive side, it saves quite a bit of time by eliminating the need to manually declare each replica in `haproxy.cfg`. While this might not seem like a significant effort for just three replicas, it becomes increasingly valuable as the number of replicas grows, saving time and effort compared to manually managing them one by one. Additionally, this approach eases the deployment process by bypassing the need for an elaborate DNS server setup, making it ideal for rapidly deploying projects.
