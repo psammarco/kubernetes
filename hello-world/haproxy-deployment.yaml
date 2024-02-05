@@ -1,19 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: haproxy-ingress-controller
+  name: haproxy-loadbalancer
 spec:
   selector:
     matchLabels:
-      app: haproxy-ingress-controller
+      app: haproxy-loadbalancer
   template:
     metadata:
       labels:
-        app: haproxy-ingress-controller
+        app: haproxy-loadbalancer
     spec:
-      initContainers:
-      - name: install-utils
-        image: debian:12
       containers:
       - name: haproxy
         image: haproxy:latest
@@ -39,7 +36,7 @@ spec:
       volumes:
       - name: haproxy-config-volume
         configMap:
-          name: haproxy-ingress-cfg
+          name: haproxy-cfg
       - name: haproxy-pid-volume
         emptyDir: {}
       - name: hosts-file

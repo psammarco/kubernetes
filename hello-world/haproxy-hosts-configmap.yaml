@@ -5,7 +5,7 @@ metadata:
 data:
   hosts: |
     # Get the IP address of any of the nginx pods in a headless network configuation using
-    # kubectl get endpoints APPNAME (which in this case is www)i
+    # kubectl get endpoints APPNAME (which in this case is www)
     # edit it, delete haproxy deployment and redeploy it. 
-    10.42.1.55 k3s.intranet.local
+    10.42.1.56:80 k3s.intranet.local
 
