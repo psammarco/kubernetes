@@ -2,8 +2,10 @@
 This CoreDNS configuration serves as the primary DNS server for your network or cluster. It efficiently handles both internal pod-to-pod resolution and external DNS requests. Specifically, it forwards public DNS queries to Google DNS servers while seamlessly managing internal pod resolution within your cluster.
 
 ## Installation
-- helm repo add coredns https://coredns.github.io/helm
-- helm install -f helm/values.yaml coredns coredns/coredns
+```
+helm repo add coredns https://coredns.github.io/helm
+helm install -f helm/values.yaml coredns coredns/coredns
+```
 
 ## Quick breakdown
 - Make sure it does not clash with any existing CoreDNS deployment;
