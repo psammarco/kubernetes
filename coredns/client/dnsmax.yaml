@@ -12,18 +12,16 @@ spec:
       labels:
         app: dnsmax
     spec:
-      dnsPolicy: "None"  # Set to "None" to use custom DNS settings
+      dnsPolicy: "None"
       dnsConfig:
         nameservers:
-        # Replace with the IP of the CoreDNS service.
-        # If DNS server is unreachable, make sure it is not an issue with the pods.
         - 10.43.229.169 
         searches:
         - intranet.local  # replace with yours
       containers:
       - name: dnsutils
         image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
-        command: ["sleep", "infinity"]  # Keep the container running
+        command: ["sleep", "infinity"]
         imagePullPolicy: IfNotPresent
       restartPolicy: Always
 
@@ -39,6 +37,3 @@ spec:
   ports:
     - protocol: TCP
       port: 8089
-
-# Pods part of the same Service should be reachable as:
-# podname.servicename.namespacename.svc.intranet.local
