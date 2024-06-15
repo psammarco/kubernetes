@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsyslog-srv 
+  namespace: rsyslog
+  labels:
+    app: rsyslog
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rsyslog
+  template:
+    metadata:
+      labels:
+        app: rsyslog
+    spec:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        - 10.43.229.169
+        searches:
+        - intranet.local
+      containers:
+      - name: rsyslog
+        image: latrina/rsyslog:server-arm64
+        ports:
+        - containerPort: 514
+        volumeMounts:
+          - name: data 
+            mountPath: "/var/log"
+            readOnly: false
+            subPathExpr: "$(POD_UID)" # creates subdir under PV's hostPath
+        env:
+          - name: POD_UID # from `kubectl get pod podname -o yaml |grep uid`
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: data 
+          persistentVolumeClaim:
+            claimName: data
