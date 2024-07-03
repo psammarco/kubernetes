@@ -14,7 +14,8 @@ spec:
     - intranet.local
   containers:
     - name: rsyslogsrv1
-      image: latrina/relp-rsyslog:server 
+      image: latrina/relp-rsyslog:server
+      imagePullPolicy: Always
       ports:
         - containerPort: 22514
           protocol: TCP
@@ -23,6 +24,10 @@ spec:
           mountPath: "/var/log"
           readOnly: false
           subPathExpr: "$(POD_UID)"
+        - name: config-volume
+          mountPath: /etc/rsyslog
+        - name: certs-volume
+          mountPath: /rsyslog-certs
       env:
         - name: POD_UID
           valueFrom:
@@ -37,6 +42,25 @@ spec:
     - name: relp-storage
       persistentVolumeClaim:
         claimName: relp-storage
+    - name: config-volume
+      configMap:
+        name: rsyslog-config
+        items:
+          - key: rsyslog.conf
+            path: rsyslog.conf
+    - name: certs-volume
+      configMap:
+        name: certs-config
+        items:
+          - key: ca-cert.pem
+            path: ca-cert.pem
+          - key: server-cert.pem
+            path: server-cert.pem
+          - key: server-key.pem
+            path: server-key.pem
+
+
+---
 
 apiVersion: v1
 kind: Pod
@@ -54,7 +78,8 @@ spec:
     - intranet.local
   containers:
     - name: rsyslogsrv2
-      image: latrina/relp-rsyslog:server 
+      image: latrina/relp-rsyslog:server
+      imagePullPolicy: Always
       ports:
         - containerPort: 22514
           protocol: TCP
@@ -63,6 +88,10 @@ spec:
           mountPath: "/var/log"
           readOnly: false
           subPathExpr: "$(POD_UID)"
+        - name: config-volume
+          mountPath: /etc/rsyslog
+        - name: certs-volume
+          mountPath: /rsyslog-certs
       env:
         - name: POD_UID
           valueFrom:
@@ -77,3 +106,21 @@ spec:
     - name: relp-storage
       persistentVolumeClaim:
         claimName: relp-storage
+    - name: config-volume
+      configMap:
+        name: rsyslog-config
+        items:
+          - key: rsyslog.conf
+            path: rsyslog.conf
+    - name: certs-volume
+      configMap:
+        name: certs-config
+        items:
+          - key: ca-cert.pem
+            path: ca-cert.pem
+          - key: server-cert.pem
+            path: server-cert.pem
+          - key: server-key.pem
+            path: server-key.pem
+
+

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: certs-config
+  namespace: relp-rsyslog
+data:
+  ca-cert.pem: |
+    <contents of ca-cert.pem>
+  server-cert.pem: |
+    <contents of server-cert.pem>
+  server-key.pem: |
+    <contents of server-key.pem>

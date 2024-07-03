@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rsyslog-config
+  namespace: relp-rsyslog
+data:
+  rsyslog.conf: |
+    # /etc/rsyslog.conf configuration file for rsyslog
+    #
+    # For more information install rsyslog-doc and see
+    # /usr/share/doc/rsyslog-doc/html/configuration/index.html
+
+
+    #################
+    #### MODULES ####
+    #################
+
+    module(load="imuxsock") # provides support for local system logging
+    #module(load="imklog")   # provides kernel logging support
+    #module(load="immark")  # provides --MARK-- message capability
+
+    # provides UDP syslog reception
+    #module(load="imudp")
+    #input(type="imudp" port="514")
+
+    # provides TCP syslog reception
+    #module(load="imtcp")
+    #input(type="imtcp" port="514")
+
+
+    ###########################
+    #### GLOBAL DIRECTIVES ####
+    ###########################
+
+    #
+    # Set the default permissions for all log files.
+    #
+    $FileOwner root
+    $FileGroup adm
+    $FileCreateMode 0640
+    $DirCreateMode 0755
+    $Umask 0022
+
+    #
+    # Where to place spool and state files
+    #
+    $WorkDirectory /var/spool/rsyslog
+
+    #
+    # Include all config files in /etc/rsyslog.d/
+    #
+    $IncludeConfig /etc/rsyslog.d/*.conf
+
+
+    ###############
+    #### RULES ####
+    ###############
+
+    #
+    # Log anything besides private authentication messages to a single log file
+    #
+    *.*;auth,authpriv.none          -/var/log/syslog
+
+    #
+    # Log commonly used facilities to their own log file
+    #
+    auth,authpriv.*                 /var/log/auth.log
+    cron.*                          -/var/log/cron.log
+    kern.*                          -/var/log/kern.log
+    mail.*                          -/var/log/mail.log
+    user.*                          -/var/log/user.log
+
+    #
+    # Emergencies are sent to everybody logged in.
+    #
+    *.emerg                         :omusrmsg:*
+
+    ## Enabling RELP
+    ## RELP advanced configuration https://www.rsyslog.com/using-tls-with-relp
+    ## See genkeys.txt for help with server-side only certificates generation:
+    module(load="imrelp" tls.tlslib="openssl")
+    input(type="imrelp" port="22514" maxDataSize="10k"
+                 tls="on"
+                 tls.cacert="/rsyslog-certs/ca-cert.pem"
+                 tls.mycert="/rsyslog-certs/server-cert.pem"
+                 tls.myprivkey="/rsyslog-certs/server-key.pem"
+                 tls.tlscfgcmd="CipherString=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 MinProtocol=TLSv1.2 MaxProtocol=TLSv1.3"
+    )
+

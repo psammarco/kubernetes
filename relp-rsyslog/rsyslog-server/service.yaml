@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "relp-rsyslog"
+  name: "relp-svc"
   namespace: "relp-rsyslog"
 spec:
   ports:
@@ -11,4 +11,3 @@ spec:
   type: NodePort
   selector:
     app: "relp-rsyslogsrv"
-
