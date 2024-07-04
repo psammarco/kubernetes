@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rsyslogclt
+  namespace: relp-rsyslog
+spec:
+  serviceName: "rsyslogclt"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: relp-rsyslogclt
+  template:
+    metadata:
+      labels:
+        app: relp-rsyslogclt
+    spec:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        - 10.43.229.169
+        searches:
+        - intranet.local
+      containers:
+        - name: rsyslogclt
+          image: latrina/relp-rsyslog:client
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: ca-cert-volume
+              mountPath: /rsyslog-certs
+          env:
+            - name: TZ
+              value: Europe/London
+            - name: RSYSLOGSRV_CENTRAL
+              value: rsyslogsrv1.relp-svc.relp-rsyslog.svc.intranet.local
+            - name: RSYSLOGSRV_SECONDARY
+              value: rsyslogsrv2.relp-svc.relp-rsyslog.svc.intranet.local
+          securityContext:
+            capabilities:
+              add: ["SYSLOG"]
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: ca-cert-volume
+          configMap:
+            name: ca-cert-config
+            items:
+              - key: ca-cert.pem
+                path: ca-cert.pem
