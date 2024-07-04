@@ -33,9 +33,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
-      securityContext:
-        capabilities:
-          add: ["SYSLOG"]
+        - name: TZ
+          value: Europe/London
   restartPolicy: Always
   terminationGracePeriodSeconds: 30
   volumes:
@@ -97,9 +96,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
-      securityContext:
-        capabilities:
-          add: ["SYSLOG"]
+        - name: TZ
+          value: Europe/London
   restartPolicy: Always
   terminationGracePeriodSeconds: 30
   volumes:
