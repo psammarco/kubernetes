@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rsyslogclt
+  name: relp-clt-svc
   namespace: relp-rsyslog
 spec:
   clusterIP: None

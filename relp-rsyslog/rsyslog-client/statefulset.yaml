@@ -4,7 +4,7 @@ metadata:
   name: rsyslogclt
   namespace: relp-rsyslog
 spec:
-  serviceName: "rsyslogclt"
+  serviceName: "relp-clt-svc"
   replicas: 2
   selector:
     matchLabels:
@@ -25,7 +25,7 @@ spec:
           image: latrina/relp-rsyslog:client
           imagePullPolicy: Always
           volumeMounts:
-            - name: ca-cert-volume
+            - name: ctl-certs-volume
               mountPath: /rsyslog-certs
           env:
             - name: TZ
@@ -40,9 +40,13 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: ca-cert-volume
+        - name: ctl-certs-volume
           configMap:
-            name: ca-cert-config
+            name: ctl-certs-config
             items:
               - key: ca-cert.pem
                 path: ca-cert.pem
+              - key: client-cert.pem
+                path: client-cert.pem
+              - key: client-key.pem
+                path: client-key.pem

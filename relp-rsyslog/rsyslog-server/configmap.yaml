@@ -76,14 +76,16 @@ data:
     *.emerg                         :omusrmsg:*
 
     ## Enabling RELP
-    ## RELP advanced configuration https://www.rsyslog.com/using-tls-with-relp
-    ## See genkeys.txt for help with server-side only certificates generation:
+    ## See genkeys.tar.gz for instructions on how to generate the keys. 
     module(load="imrelp" tls.tlslib="openssl")
+
     input(type="imrelp" port="22514" maxDataSize="10k"
-                 tls="on"
-                 tls.cacert="/rsyslog-certs/ca-cert.pem"
-                 tls.mycert="/rsyslog-certs/server-cert.pem"
-                 tls.myprivkey="/rsyslog-certs/server-key.pem"
-                 tls.tlscfgcmd="CipherString=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 MinProtocol=TLSv1.2 MaxProtocol=TLSv1.3"
+    tls="on"
+    tls.authMode="certvalid"
+    tls.cacert="/rsyslog-certs/ca-cert.pem"
+    tls.mycert="/rsyslog-certs/server-cert.pem"
+    tls.myprivkey="/rsyslog-certs/server-key.pem"
+    tls.permittedPeer="*.intranet.local"
+    tls.tlscfgcmd="CipherString=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 MinProtocol=TLSv1.2 MaxProtocol=TLSv1.3"
     )
 
