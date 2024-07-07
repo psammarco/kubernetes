@@ -74,3 +74,12 @@ Creates a RW _storageClassName_ called ***relp-store*** where _hostPath_ (the vo
   hostPath:
     path: /opt/PVs/relp-rsyslog
 ```
+
+## Client configuration
+***Statefulset*** is used as we require predictable naming for the pods in order to take advantage of CoreDNS functionalities and for TLS authentication.
+
+The application uses *"RSYSLOGSRV_CENTRAL"* and *"RSYSLOGSRV_SECONDARY"* environment variables to set the rsyslog servers domain names.
+
+Fore more info on the rsyslog client configuration see the docker image [Github page](https://github.com/psammarco/dockerhub/tree/main/relp-rsyslog/rsyslog-client).
+
+Lastly, See [genkeys.tar.gz](https://github.com/psammarco/kubernetes/blob/master/relp-rsyslog/genkeys.tar.gz) for instructions on how to generate the SSL certificates.
