@@ -80,6 +80,4 @@ Creates a RW _storageClassName_ called ***relp-store*** where _hostPath_ (the vo
 
 The application uses *"RSYSLOGSRV_CENTRAL"* and *"RSYSLOGSRV_SECONDARY"* environment variables to set the rsyslog servers domain names.
 
-Fore more info on the rsyslog client configuration see the docker image [Github page](https://github.com/psammarco/dockerhub/tree/main/relp-rsyslog/rsyslog-client).
-
-Lastly, See [genkeys.tar.gz](https://github.com/psammarco/kubernetes/blob/master/relp-rsyslog/genkeys.tar.gz) for instructions on how to generate the SSL certificates.
+Fore more info on the rsyslog client configuration see the docker image [Github page](https://github.com/psammarco/dockerhub/tree/main/relp-rsyslog/rsyslog-client). Instructions on how to generate the SSL certificates can be found in [genkeys.tar.gz](https://github.com/psammarco/kubernetes/blob/master/relp-rsyslog/genkeys.tar.gz).
