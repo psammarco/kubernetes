@@ -12,6 +12,8 @@ spec:
     - 10.43.229.169
     searches:
     - intranet.local
+  securityContext:
+    fsGroup: 1000
   containers:
     - name: rsyslogsrv1
       image: latrina/relp-rsyslog:server
@@ -25,7 +27,8 @@ spec:
           readOnly: false
           subPathExpr: "$(POD_UID)"
         - name: config-volume
-          mountPath: /etc/rsyslog
+          mountPath: /etc/rsyslog.conf
+          subPath: rsyslog.conf
         - name: certs-volume
           mountPath: /rsyslog-certs
       env:
@@ -44,9 +47,6 @@ spec:
     - name: config-volume
       configMap:
         name: rsyslog-config
-        items:
-          - key: rsyslog.conf
-            path: rsyslog.conf
     - name: certs-volume
       configMap:
         name: certs-config
@@ -58,9 +58,7 @@ spec:
           - key: server-key.pem
             path: server-key.pem
 
-
 ---
-
 apiVersion: v1
 kind: Pod
 metadata:
@@ -75,6 +73,8 @@ spec:
     - 10.43.229.169
     searches:
     - intranet.local
+  securityContext:
+    fsGroup: 1000
   containers:
     - name: rsyslogsrv2
       image: latrina/relp-rsyslog:server
@@ -88,7 +88,8 @@ spec:
           readOnly: false
           subPathExpr: "$(POD_UID)"
         - name: config-volume
-          mountPath: /etc/rsyslog
+          mountPath: /etc/rsyslog.conf
+          subPath: rsyslog.conf
         - name: certs-volume
           mountPath: /rsyslog-certs
       env:
@@ -107,9 +108,6 @@ spec:
     - name: config-volume
       configMap:
         name: rsyslog-config
-        items:
-          - key: rsyslog.conf
-            path: rsyslog.conf
     - name: certs-volume
       configMap:
         name: certs-config
@@ -120,5 +118,4 @@ spec:
             path: server-cert.pem
           - key: server-key.pem
             path: server-key.pem
-
 

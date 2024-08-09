@@ -10,7 +10,6 @@ data:
     # For more information install rsyslog-doc and see
     # /usr/share/doc/rsyslog-doc/html/configuration/index.html
 
-
     #################
     #### MODULES ####
     #################
@@ -27,18 +26,19 @@ data:
     #module(load="imtcp")
     #input(type="imtcp" port="514")
 
-
     ###########################
     #### GLOBAL DIRECTIVES ####
     ###########################
 
     #
     # Set the default permissions for all log files.
-    #
-    $FileOwner root
-    $FileGroup adm
+    # rsyslogd will start as root then dropped to standard user
+    $FileOwner rsyslog
+    $FileGroup rsyslogd
     $FileCreateMode 0640
     $DirCreateMode 0755
+    $PrivDropToUser rsyslog
+    $PrivDropToGroup rsyslogd
     $Umask 0022
 
     #
@@ -50,7 +50,6 @@ data:
     # Include all config files in /etc/rsyslog.d/
     #
     $IncludeConfig /etc/rsyslog.d/*.conf
-
 
     ###############
     #### RULES ####
@@ -76,16 +75,19 @@ data:
     *.emerg                         :omusrmsg:*
 
     ## Enabling RELP
-    ## See genkeys.tar.gz for instructions on how to generate the keys. 
+    ## RELP advanced configuration https://www.rsyslog.com/using-tls-with-relp
+    ## See genkeys.txt for help with server-side only certificates generation:
     module(load="imrelp" tls.tlslib="openssl")
 
-    input(type="imrelp" port="22514" maxDataSize="10k"
-    tls="on"
-    tls.authMode="certvalid"
-    tls.cacert="/rsyslog-certs/ca-cert.pem"
-    tls.mycert="/rsyslog-certs/server-cert.pem"
-    tls.myprivkey="/rsyslog-certs/server-key.pem"
-    tls.permittedPeer="*.intranet.local"
-    tls.tlscfgcmd="CipherString=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 MinProtocol=TLSv1.2 MaxProtocol=TLSv1.3"
+    # Configure the RELP input
+    input(
+        type="imrelp"
+        port="22514"
+        maxDataSize="10k"
+        tls="on"
+        tls.cacert="/rsyslog-certs/ca-cert.pem"
+        tls.mycert="/rsyslog-certs/server-cert.pem"
+        tls.myprivkey="/rsyslog-certs/server-key.pem"
+        tls.tlscfgcmd="CipherString=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 MinProtocol=TLSv1.2 MaxProtocol=TLSv1.3"
     )
 
