@@ -11,4 +11,4 @@ spec:
   storageClassName: relp-store 
   hostPath:
     path: /opt/PVs/relp-rsyslog
-
+    type: DirectoryOrCreate
