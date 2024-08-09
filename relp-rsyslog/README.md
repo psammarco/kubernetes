@@ -81,3 +81,7 @@ Creates a RW _storageClassName_ called ***relp-store*** where _hostPath_ (the vo
 The application uses *"RSYSLOGSRV_CENTRAL"* and *"RSYSLOGSRV_SECONDARY"* environment variables to set the rsyslog servers domain names.
 
 Fore more info on the rsyslog client configuration see the docker image [Github page](https://github.com/psammarco/dockerhub/tree/main/relp-rsyslog/rsyslog-client). Instructions on how to generate the SSL certificates can be found in [genkeys.tar.gz](https://github.com/psammarco/kubernetes/blob/master/relp-rsyslog/genkeys.tar.gz).
+
+## Dropping privileges in rsyslog
+
+In both the client and server configurations, rsyslogd initially starts as the ***root*** user but then drops privileges to run as a non-privileged user. This means that the only process running does so as the ***rsyslog*** user. However, the pod itself still operates with root privileges, so if you execute a command within the pod, it will be run as root. I am currently working on finding a solution to start rsyslogd *(with this very same configuration)* without requiring root privileges altogether. If and when that is achieved, the entire pod will be able to run as a non-privileged user.
