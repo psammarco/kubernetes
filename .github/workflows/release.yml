@@ -19,15 +19,63 @@ jobs:
     name: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          cache: npm
-          node-version: lts/*
-      - run: npm clean-install
-      - run: corepack npm audit signatures
+          node-version: '18'
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Determine the last tag (Method 1)
+        run: |
+          LAST_TAG=$(git for-each-ref --format="%(refname:short)" refs/tags --sort=creatordate | tail -n1)
+          echo "LAST_TAG=${LAST_TAG}" >> build.env
+          echo "overall LAST TAG is $LAST_TAG"
+
+      - name: Determine the last tag reachable from HEAD (Method 2)
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 --always)
+          echo "LAST_TAG=${LAST_TAG}" >> build.env
+          echo "VERSION=${LAST_TAG}" >> build.env
+          echo "VERSION is $VERSION"
+
       # pinned version updated automatically by Renovate.
       # details at https://semantic-release.gitbook.io/semantic-release/usage/installation#global-installation
       - run: npx semantic-release@21.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      - name: Fetch updated tags
+        run: git fetch --tags
+
+      - name: Update environment variables and create semver.env
+        run: |
+          LAST_TAG=$(git for-each-ref --format="%(refname:short)" refs/tags --sort=creatordate | tail -n1)
+          echo "LAST_TAG=${LAST_TAG}" >> build.env
+          echo "overall LAST TAG is $LAST_TAG"
+          LAST_TAG=$(git describe --tags --abbrev=0 --always)
+          echo "LAST_TAG=${LAST_TAG}" > semver.env
+          echo "VERSION=${LAST_TAG}" >> semver.env
+          echo "BOOTSTRAP=${{ env.BOOTSTRAP }}" >> semver.env
+          echo "SKIP_BUILD=${{ env.SKIP_BUILD }}" >> semver.env
+          echo "ALLOW_TRIVY_FAILURE=${{ env.ALLOW_TRIVY_FAILURE }}" >> semver.env
+          echo "VERSION is $VERSION"
+          cat semver.env
+
+      - name: Upload semver.env artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: semver-env
+          path: ./semver.env
+
+      - name: Set build.env as output
+        run: cat build.env
+        id: buildenv
+
+      - name: Save environment variables from build.env
+        run: |
+          echo "LAST_TAG=$(echo '${{ steps.buildenv.outputs.LAST_TAG }}')" >> $GITHUB_ENV
+          echo "VERSION=$(echo '${{ steps.buildenv.outputs.VERSION }}')" >> $GITHUB_ENV
