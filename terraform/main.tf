@@ -87,17 +87,6 @@ resource "aws_instance" "example" {
     # Disable swap
     sudo swapoff -a
     sudo sed -i '/ swap / s/^/#/' /etc/fstab
-    # echo -e "overlay\nbr_netfilter" | sudo tee /etc/modules-load.d/containerd.conf
-    # echo -e "net.bridge.bridge-nf-call-ip6tables = 1\nnet.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/kubernetes.conf
-    # sudo sysctl --system
-
-
-
-
-    # Enable kernel modules for Kubernetes
-    # sudo modprobe br_netfilter
-    # sudo bash -c 'echo "net.bridge.bridge-nf-call-iptables = 1" > /etc/sysctl.d/k8s.conf'
-    # sudo sysctl --system
 
     # Determine node type (master or worker) based on hostname
     HOSTNAME=$(hostname)
@@ -105,19 +94,22 @@ resource "aws_instance" "example" {
 
     # If this is the master node
     if [ "$(hostname)" == "master" ]; then
-      sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+    sudo systemctl enable kubelet
+    sudo kubeadm config images pull --cri-socket unix:///run/containerd/containerd.sock
+    INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
-      # Set up kubeconfig for the ubuntu user
-      mkdir -p $HOME/.kube
-      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-      sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    sudo kubeadm init --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-      # Install Calico network plugin
-      kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-
+    # Step 6: Install Network Plugin on the Master (Calico)
+    sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+    sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
+    # watch kubectl get pods --all-namespaces
       # Output the join command for the worker nodes
-      kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
-      sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
+    sudo kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
+    sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
     else
       # Wait until the join command script is available from the master
       while [ ! -f /home/ubuntu/kubeadm_join_command.sh ]; do
