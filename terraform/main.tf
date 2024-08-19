@@ -45,6 +45,9 @@ resource "aws_instance" "example" {
   tags = {
     Name = "${count.index == 0 ? "master" : "worker-${count.index}"}"
   }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
   #  to install Client Version: v1.31.0
   # Kustomize Version: v5.4.2
   user_data = <<-EOF
@@ -52,6 +55,11 @@ resource "aws_instance" "example" {
     # Update and install necessary packages
     sudo apt-get update -y
     sudo apt-get upgrade -y
+
+    # Set hostname based on instance tags
+    HOSTNAME="${count.index == 0 ? "master" : "worker-${count.index}"}"
+    sudo hostnamectl set-hostname $HOSTNAME
+
 
     # Install Docker
     sudo apt-get install -y docker.io
@@ -61,26 +69,39 @@ resource "aws_instance" "example" {
     # Install Kubernetes packages
     sudo apt-get install -y apt-transport-https ca-certificates curl gpg awscli
     sudo mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
     # This overwrites any existing configuration in /etc/apt/sources.list.d/kubernetes.list
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 
 
-    # Disable swap
-    sudo swapoff -a
+
     
     sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl
+    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget 
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
 
-
+    sudo ufw disable
+    # Disable swap
+    sudo swapoff -a
     sudo sed -i '/ swap / s/^/#/' /etc/fstab
+    # echo -e "overlay\nbr_netfilter" | sudo tee /etc/modules-load.d/containerd.conf
+    # echo -e "net.bridge.bridge-nf-call-ip6tables = 1\nnet.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/kubernetes.conf
+    # sudo sysctl --system
+
+
+
 
     # Enable kernel modules for Kubernetes
-    sudo modprobe br_netfilter
-    sudo bash -c 'echo "net.bridge.bridge-nf-call-iptables = 1" > /etc/sysctl.d/k8s.conf'
-    sudo sysctl --system
+    # sudo modprobe br_netfilter
+    # sudo bash -c 'echo "net.bridge.bridge-nf-call-iptables = 1" > /etc/sysctl.d/k8s.conf'
+    # sudo sysctl --system
+
+    # Determine node type (master or worker) based on hostname
+    HOSTNAME=$(hostname)
+
 
     # If this is the master node
     if [ "$(hostname)" == "master" ]; then
@@ -96,6 +117,7 @@ resource "aws_instance" "example" {
 
       # Output the join command for the worker nodes
       kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
+      sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
     else
       # Wait until the join command script is available from the master
       while [ ! -f /home/ubuntu/kubeadm_join_command.sh ]; do
