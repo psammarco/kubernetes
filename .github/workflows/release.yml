@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install semantic-release and plugins
+        run: |
+          npm install -g semantic-release@21.0.2 @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog @semantic-release/release-notes-generator @semantic-release/commit-analyzer @semantic-release/git
+
       - name: Fetch all tags
         run: git fetch --tags
 
