@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/bruvio/kubernetes/compare/1.0.0...1.1.0) (2024-08-19)
+
+
+### Features
+
+* add working script to setup the cluster ([87cb827](https://github.com/bruvio/kubernetes/commit/87cb827f3126eff64eb8b8717cabdf1758c1c55f))
+
 # 1.0.0 (2024-08-19)
 
 
