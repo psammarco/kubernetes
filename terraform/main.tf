@@ -52,7 +52,6 @@ resource "aws_instance" "example" {
   # Kustomize Version: v5.4.2
   user_data = <<-EOF
     #!/bin/bash
-    # Update and install necessary packages
     sudo apt-get update -y
     sudo apt-get upgrade -y
 
@@ -77,7 +76,7 @@ resource "aws_instance" "example" {
 
 
 
-    
+
     sudo apt-get update
     sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget 
     sudo apt-mark hold kubelet kubeadm kubectl
@@ -99,7 +98,7 @@ resource "aws_instance" "example" {
     INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
     sudo kubeadm init --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all
-    mkdir -p $HOME/.kube
+    sudo mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
@@ -107,17 +106,21 @@ resource "aws_instance" "example" {
     sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
     sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
     # watch kubectl get pods --all-namespaces
-      # Output the join command for the worker nodes
+        # Output the join command for the worker nodes
     sudo kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
     sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
     else
-      # Wait until the join command script is available from the master
-      while [ ! -f /home/ubuntu/kubeadm_join_command.sh ]; do
+        sudo systemctl enable kubelet
+        sudo mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        # Wait until the join command script is available from the master
+        while [ ! -f /home/ubuntu/kubeadm_join_command.sh ]; do
         sleep 10
-      done
+        done
 
-      # Join the Kubernetes cluster
-      sudo bash /home/ubuntu/kubeadm_join_command.sh
+        # Join the Kubernetes cluster
+        sudo bash /home/ubuntu/kubeadm_join_command.sh
     fi
   EOF
 }
