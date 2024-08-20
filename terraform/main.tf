@@ -55,10 +55,10 @@ resource "aws_instance" "example" {
     sudo apt-get update -y
     sudo apt-get upgrade -y
 
-    # Set hostname based on instance tags
+    # Set hostname based on index
     HOSTNAME="${count.index == 0 ? "master" : "worker-${count.index}"}"
     sudo hostnamectl set-hostname $HOSTNAME
-
+    sudo systemctl restart systemd-hostnamed
 
     # Install Docker
     sudo apt-get install -y docker.io
@@ -87,9 +87,8 @@ resource "aws_instance" "example" {
     sudo swapoff -a
     sudo sed -i '/ swap / s/^/#/' /etc/fstab
 
-    # Determine node type (master or worker) based on hostname
-    HOSTNAME=$(hostname)
 
+    
 
     # If this is the master node
     if [ "$(hostname)" == "master" ]; then
