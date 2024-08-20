@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/bruvio/kubernetes/compare/1.1.0...1.1.1) (2024-08-20)
+
+
+### Bug Fixes
+
+* fix script to finalize installation ([96828b1](https://github.com/bruvio/kubernetes/commit/96828b11d545156dc7c3713d5d29e63d62c32c8e))
+
 # [1.1.0](https://github.com/bruvio/kubernetes/compare/1.0.0...1.1.0) (2024-08-19)
 
 
