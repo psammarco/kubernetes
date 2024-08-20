@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/bruvio/kubernetes/compare/1.1.1...1.1.2) (2024-08-20)
+
+
+### Bug Fixes
+
+* Apply the Hostname Change Without Rebooting ([b91caa6](https://github.com/bruvio/kubernetes/commit/b91caa64fce6d38c4671e460fa253dad8445aa34))
+
 ## [1.1.1](https://github.com/bruvio/kubernetes/compare/1.1.0...1.1.1) (2024-08-20)
 
 
