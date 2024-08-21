@@ -209,3 +209,47 @@ output "instance_public_ips" {
 }
 
 
+locals {
+  folders = {
+    "folder1" = {
+      source      = "../simple/"
+      destination = "/home/ubuntu/simple/"
+    }
+    "folder2" = {
+      source      = "../helloHttpd/"
+      destination = "/home/ubuntu/helloHttpd/"
+    }
+  }
+}
+
+
+# Null resource to handle local folder copy
+resource "null_resource" "copy_folder" {
+  depends_on = [aws_instance.example[0]]
+  for_each = local.folders
+  provisioner "file" {
+    source      = each.value.source
+    destination = each.value.destination
+
+    connection {
+      type        = "ssh"
+      host        = aws_instance.example[0].public_ip
+      user        = "ubuntu"  # 
+      private_key = file("./deployer_key")  #
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "ls -la ${each.value.destination}",
+    ]
+
+    connection {
+      type        = "ssh"
+      host        = aws_instance.example[0].public_ip
+      user        = "ubuntu"
+      private_key = file("./deployer_key")
+    }
+  }
+}
+

@@ -3,10 +3,11 @@ kind: Service
 metadata:
   name: my-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: my-app
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
+      nodePort: 30007  # Optional. If not specified, Kubernetes will auto-assign a port in the range 30000-32767.
