@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/bruvio/kubernetes/compare/1.1.2...1.1.3) (2024-08-21)
+
+
+### Bug Fixes
+
+* working examples ([9f10fbe](https://github.com/bruvio/kubernetes/commit/9f10fbe82a9da8dd5f35dd92ebafb2c00b2b28b8))
+
 ## [1.1.2](https://github.com/bruvio/kubernetes/compare/1.1.1...1.1.2) (2024-08-20)
 
 
