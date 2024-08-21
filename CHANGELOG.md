@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/bruvio/kubernetes/compare/1.1.3...1.1.4) (2024-08-21)
+
+
+### Bug Fixes
+
+* use nodeport as loadbalancer is not working ([2cc69be](https://github.com/bruvio/kubernetes/commit/2cc69bed942981691326743418c8a986b400d622))
+
 ## [1.1.3](https://github.com/bruvio/kubernetes/compare/1.1.2...1.1.3) (2024-08-21)
 
 
