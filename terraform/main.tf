@@ -213,7 +213,7 @@ resource "aws_instance" "master" {
 
   provisioner "remote-exec" {
     inline = [
-      "/bin/bash -c \"timeout 300 sed '/finished-user-data/q' <(tail -f /var/log/cloud-init-output.log)\""
+      "/bin/bash -c \"timeout 300 sed '/finished at/q' <(tail -f /var/log/cloud-init-output.log)\""
     ]
 
     connection {

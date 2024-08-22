@@ -50,9 +50,56 @@ sudo mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-# Step 6: Install Network Plugin on the Master (Calico)
-sudo kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml 
-sudo kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
+# We'll use Calico for the network plugin
+
+sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+# Make sure all the infrastructure pods are running
+sudo kubectl get pod --all-namespaces
+
+sudo kubectl describe pod -l component=kube-apiserver -n kube-system
+
+sudo kubectl get events
+
+# Enable command line completion
+source <(sudo kubectl completion bash)
+
+echo "source <(kubectl completion bash)" >> $HOME/.bashrc
+
+# Untaint the control plane, as we only have one node
+sudo kubectl taint node --all node-role.kubernetes.io/master-
+# Troubleshooting and or optional add ons
+# Get containerd running, append or create several files
+sudo sh -c 'echo -e "disabled_plugins = [\"restart\"]\n[plugins.linux]\n  shim_debug = true\n[plugins.cri.containerd.runtimes.runsc]\n  runtime_type = \"io.containerd.runsc.v1\"" > /etc/containerd/config.toml'
+
+
+sudo sh -c 'echo -e "runtime-endpoint: unix:///run/containerd/containerd.sock\nimage-endpoint: unix:///var/run/dockershim.sock\ntimeout: 10\ndebug: true" > /etc/crictl.yaml'
+# Ensure containerd starts and 
+
+sudo systemctl restart containerd
+
+kubectl get pod --all-namespaces
+
+
+# Optional 
+# Install and configure crictl and gVisor if you want a more secure environment. 
+
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz
+
+tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
+
+sudo mv crictl /usr/local/bin
+
+cat <<EOF | sudo tee /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+EOF
+
+sudo wget https://storage.googleapis.com/gvisor/releases/nightly/latest/containerd-shim-runsc-v1 -O /usr/local/bin/containerd-shim-runsc-v1
+sudo chmod +x /usr/local/bin/containerd-shim-runsc-v1
+
+sudo wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc -O /usr/local/bin/runsc
+sudo chmod +x /usr/local/bin/runsc
+
 # watch kubectl get pods --all-namespaces
     # Output the join command for the worker nodes
 sudo kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
