@@ -101,8 +101,7 @@ resource "aws_iam_instance_profile" "example" {
   role = aws_iam_role.example.name
 }
 
-resource "aws_instance" "example" {
-  count           = 3
+resource "aws_instance" "master" {
   ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
   instance_type   = "t2.large"
   security_groups = [aws_security_group.control_plane_sg.name]
@@ -112,7 +111,7 @@ resource "aws_instance" "example" {
   }
   iam_instance_profile = aws_iam_instance_profile.example.name
   tags = {
-    Name = "${count.index == 0 ? "master" : "worker-${count.index}"}"
+    Name = "master"
   }
   private_dns_name_options {
     hostname_type = "resource-name"
@@ -125,7 +124,7 @@ resource "aws_instance" "example" {
     sudo apt-get upgrade -y
 
     # Set hostname based on index∫
-    HOSTNAME="${count.index == 0 ? "master" : "worker-${count.index}"}"
+    HOSTNAME="master"
     sudo hostnamectl set-hostname $HOSTNAME
     sudo systemctl restart systemd-hostnamed
 
@@ -175,17 +174,17 @@ resource "aws_instance" "example" {
     echo "installing calico"
     sudo su
     export KUBECONFIG=/etc/kubernetes/admin.conf
-    exit
+    
 
     # Step 6: Install Network Plugin on the Master (Calico)
-    sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/tigera-operator.yaml 
-    sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/custom-resources.yaml
-    sudo kubectl create -f custom-resources.yaml
+    kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/tigera-operator.yaml 
+    kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/custom-resources.yaml
+    kubectl create -f custom-resources.yaml
 
     # watch kubectl get pods --all-namespaces
         # Output the join command for the worker nodes
-    sudo kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
-    sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
+    kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
+    chmod +x /home/ubuntu/kubeadm_join_command.sh
     aws s3 cp /home/ubuntu/kubeadm_join_command.sh s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh
 
     echo "installing ks9 dashboard"
@@ -194,10 +193,10 @@ resource "aws_instance" "example" {
     k9s version
 
     curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-    sudo apt-get install apt-transport-https --yes
+    apt-get install apt-transport-https --yes
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-    sudo apt-get update
-    sudo apt-get install helm
+    apt-get update
+    apt-get install helm
     helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 
     helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
@@ -212,9 +211,83 @@ resource "aws_instance" "example" {
   EOF
 }
 
-output "instance_public_ips" {
-  value = aws_instance.example[*].public_ip
+resource "aws_instance" "workers" {
+  count           = 2
+  ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
+  instance_type   = "t2.large"
+  security_groups = [aws_security_group.control_plane_sg.name]
+  key_name        = aws_key_pair.deployer.key_name
+  root_block_device {
+    volume_size = 20
+  }
+  iam_instance_profile = aws_iam_instance_profile.example.name
+  tags = {
+    Name = "worker-${count.index + 1}"
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  #  to install Client Version: v1.31.0
+  # Kustomize Version: v5.4.2
+  user_data  = <<-EOF
+    #!/bin/bash
+    sudo apt-get update -y
+    sudo apt-get upgrade -y
+
+    # Set hostname based on index∫
+    HOSTNAME="worker-${count.index + 1}"
+    sudo hostnamectl set-hostname $HOSTNAME
+    sudo systemctl restart systemd-hostnamed
+
+    # Install Docker
+    sudo apt-get install -y docker.io
+    sudo systemctl enable docker
+    sudo systemctl start docker
+
+    # Install Kubernetes packages
+    sudo apt-get install -y apt-transport-https ca-certificates curl gpg awscli bash-completion
+    sudo mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    # This overwrites any existing configuration in /etc/apt/sources.list.d/kubernetes.list
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
+
+
+
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget 
+    sudo apt-mark hold kubelet kubeadm kubectl
+    sudo systemctl enable --now kubelet
+
+    sudo ufw disable
+    # Disable swap
+    sudo swapoff -a
+    sudo sed -i '/ swap / s/^/#/' /etc/fstab
+    modprobe overlay
+    modprobe br_netfilter
+    echo -e "net.bridge.bridge-nf-call-ip6tables = 1\nnet.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/kubernetes.conf
+
+
+
+    sudo systemctl enable kubelet
+    aws s3 cp  s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh /home/ubuntu/kubeadm_join_command.sh
+    sudo ./kubeadm_join_command.sh
+    
+  EOF
+  depends_on = [aws_instance.master]
 }
+
+
+
+output "master_public_ips" {
+  value = aws_instance.master.public_ip
+}
+output "workers_public_ips" {
+  value = aws_instance.workers[*].public_ip
+}
+
 # Generate a random bucket name
 resource "random_pet" "bucket_name" {
   length = 2
