@@ -28,6 +28,8 @@ resource "aws_security_group" "control_plane_sg" {
   }
 }
 
+# investigate following security group settings following documentation
+
 # resource "aws_security_group" "control_plane_sg" {
 #   name        = "control-plane-sg"
 #   description = "Security group for the control plane"
@@ -116,8 +118,7 @@ resource "aws_instance" "master" {
   private_dns_name_options {
     hostname_type = "resource-name"
   }
-  #  to install Client Version: v1.31.0
-  # Kustomize Version: v5.4.2
+
   user_data = <<-EOF
     #!/bin/bash
     sudo apt-get update -y
@@ -160,15 +161,17 @@ resource "aws_instance" "master" {
 
 
     
-
-    # If this is the master node
-    if [ "$(hostname)" == "master" ]; then
     sudo systemctl enable kubelet
     sudo kubeadm config images pull --cri-socket unix:///run/containerd/containerd.sock
     INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 
     sudo kubeadm init --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
+
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
     sleep 15
 
     echo "installing calico"
@@ -181,8 +184,8 @@ resource "aws_instance" "master" {
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/custom-resources.yaml
     kubectl create -f custom-resources.yaml
 
-    # watch kubectl get pods --all-namespaces
-        # Output the join command for the worker nodes
+
+    # Output the join command for the worker nodes
     kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
     chmod +x /home/ubuntu/kubeadm_join_command.sh
     aws s3 cp /home/ubuntu/kubeadm_join_command.sh s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh
@@ -192,6 +195,7 @@ resource "aws_instance" "master" {
     source ~/.config/envman/PATH.env
     k9s version
 
+    echo "installing kubernetes dashboard via helm"
     curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
     apt-get install apt-transport-https --yes
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
@@ -201,21 +205,31 @@ resource "aws_instance" "master" {
 
     helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 
+    # copy all files from s3 to the master node
     aws s3 cp  s3://${random_pet.bucket_name.id}/ /home/ubuntu/ --recursive
 
-    else
-        sudo systemctl enable kubelet
-        aws s3 cp  s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh /home/ubuntu/kubeadm_join_command.sh
-        sudo ./kubeadm_join_command.sh
-    fi
+
   EOF
+
+  provisioner "remote-exec" {
+    inline = [
+      "/bin/bash -c \"timeout 300 sed '/finished-user-data/q' <(tail -f /var/log/cloud-init-output.log)\""
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("deployer_key")
+      host        = self.public_ip
+    }
+  }
 }
 
-provider "time" {}
+# provider "time" {}
 
-resource "time_sleep" "wait" {
-  create_duration = "120s" # Waits for 30 seconds
-}
+# resource "time_sleep" "wait" {
+#   create_duration = "245s"
+# }
 
 resource "aws_instance" "workers" {
   count           = 2
@@ -235,7 +249,7 @@ resource "aws_instance" "workers" {
   }
   #  to install Client Version: v1.31.0
   # Kustomize Version: v5.4.2
-  user_data  = <<-EOF
+  user_data = <<-EOF
     #!/bin/bash
     sudo apt-get update -y
     sudo apt-get upgrade -y
@@ -282,7 +296,8 @@ resource "aws_instance" "workers" {
     sudo ./kubeadm_join_command.sh
     
   EOF
-  depends_on = [aws_instance.master,time_sleep.wait]
+  # depends_on = [aws_instance.master,time_sleep.wait]
+  depends_on = [aws_instance.master]
 }
 
 
@@ -338,7 +353,7 @@ resource "aws_s3_bucket_object" "folder1" {
   for_each = fileset(var.folder1_path, "**/*")
 
   bucket = aws_s3_bucket.this.id
-  key    = each.key # Corrected: Use only the relative path inside the folder
+  key    = each.key
   source = "${var.folder1_path}/${each.key}"
   acl    = "private"
   etag   = filemd5("${var.folder1_path}/${each.key}")
@@ -348,7 +363,7 @@ resource "aws_s3_bucket_object" "folder2" {
   for_each = fileset(var.folder2_path, "**/*")
 
   bucket = aws_s3_bucket.this.id
-  key    = each.key # Corrected: Use only the relative path inside the folder
+  key    = each.key
   source = "${var.folder2_path}/${each.key}"
   acl    = "private"
   etag   = filemd5("${var.folder2_path}/${each.key}")
