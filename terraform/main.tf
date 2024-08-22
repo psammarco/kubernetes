@@ -211,6 +211,12 @@ resource "aws_instance" "master" {
   EOF
 }
 
+provider "time" {}
+
+resource "time_sleep" "wait" {
+  create_duration = "120s" # Waits for 30 seconds
+}
+
 resource "aws_instance" "workers" {
   count           = 2
   ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
@@ -276,7 +282,7 @@ resource "aws_instance" "workers" {
     sudo ./kubeadm_join_command.sh
     
   EOF
-  depends_on = [aws_instance.master]
+  depends_on = [aws_instance.master,time_sleep.wait]
 }
 
 
