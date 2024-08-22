@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/bruvio/kubernetes/compare/1.2.0...1.2.1) (2024-08-22)
+
+
+### Bug Fixes
+
+* fix sed command to mark cloud init completion ([d485936](https://github.com/bruvio/kubernetes/commit/d48593680a164d2a2efd39448f4b779615ddd020))
+
 # [1.2.0](https://github.com/bruvio/kubernetes/compare/1.1.4...1.2.0) (2024-08-22)
 
 
