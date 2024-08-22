@@ -1,3 +1,17 @@
+# [1.2.0](https://github.com/bruvio/kubernetes/compare/1.1.4...1.2.0) (2024-08-22)
+
+
+### Bug Fixes
+
+* add time wait before provisioning workers ([a35125a](https://github.com/bruvio/kubernetes/commit/a35125a5c8f0bf38fcb7cb749eae5cf3b6ee4400))
+* create workers after master ([43bd8f6](https://github.com/bruvio/kubernetes/commit/43bd8f666a2c58112dc93c08f7029c95717f77a4))
+* use remove exec to wait for user data completion or time out ([3bb0557](https://github.com/bruvio/kubernetes/commit/3bb055744a8ed5131501259626ba5b7ad7b7f410))
+
+
+### Features
+
+* adding s3 bucket as storage and use to sync data to nodes ([a575f9c](https://github.com/bruvio/kubernetes/commit/a575f9ca2d3a040c8fe2b4f8c689239f13091236))
+
 ## [1.1.4](https://github.com/bruvio/kubernetes/compare/1.1.3...1.1.4) (2024-08-21)
 
 
