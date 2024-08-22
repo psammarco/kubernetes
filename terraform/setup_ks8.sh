@@ -51,12 +51,19 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 # Step 6: Install Network Plugin on the Master (Calico)
-sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml 
-sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
+sudo kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml 
+sudo kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
 # watch kubectl get pods --all-namespaces
     # Output the join command for the worker nodes
 sudo kubeadm token create --print-join-command > /home/ubuntu/kubeadm_join_command.sh
 sudo chmod +x /home/ubuntu/kubeadm_join_command.sh
+
+aws s3 cp /home/ubuntu/kubeadm_join_command.sh s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh
+
+echo "installing ks9 dashboard"
+curl -sS https://webinstall.dev/k9s | bash
+source ~/.config/envman/PATH.env
+k9s version
 
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 sudo apt-get install apt-transport-https --yes
@@ -66,6 +73,7 @@ sudo apt-get install helm
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+
 
 
 else
