@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/bruvio/kubernetes/compare/1.3.0...1.3.1) (2024-08-24)
+
+
+### Bug Fixes
+
+* fix env reference ([4d57c9a](https://github.com/bruvio/kubernetes/commit/4d57c9a981f9c98e9e5b4ca16dcbfabde4adced9))
+
 # [1.3.0](https://github.com/bruvio/kubernetes/compare/1.2.2...1.3.0) (2024-08-24)
 
 
