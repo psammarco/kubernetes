@@ -20,6 +20,7 @@ resource "aws_instance" "master" {
     "kubernetes.io/cluster/" = "bruvio"
 
   }
+  associate_public_ip_address = true
   private_dns_name_options {
     hostname_type = "resource-name"
   }
@@ -170,8 +171,9 @@ resource "aws_instance" "master" {
       private_key = file("deployer_key")
       host        = self.public_ip
     }
-  }
 
+  }
+  depends_on = [aws_security_group.control_plane_sg, module.vpc]
 }
 
 # provider "time" {}
@@ -195,6 +197,7 @@ resource "aws_instance" "workers" {
     Name                     = "worker-${count.index + 1}"
     "kubernetes.io/cluster/" = "bruvio"
   }
+  associate_public_ip_address = true
   private_dns_name_options {
     hostname_type = "resource-name"
   }
