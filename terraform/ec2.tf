@@ -13,6 +13,7 @@ resource "aws_instance" "master" {
   root_block_device {
     volume_size = 20
   }
+  subnet_id     = module.vpc.public_subnets[0]
   iam_instance_profile = aws_iam_instance_profile.master.name
   tags = {
     Name                     = "master"
@@ -25,6 +26,12 @@ resource "aws_instance" "master" {
 
   user_data = <<-EOF
     #!/bin/bash
+    CLUSTER_NAME="bruvio"
+    K8S_VERSION="1.31.0"
+    REGION="eu-west-2"
+    VPC_ID="${module.vpc.vpc_id}"
+    SERVICE_ACCOUNT="aws-load-balancer-controller"
+    NAMESPACE="kube-system"
     sudo apt-get update -y
     sudo apt-get upgrade -y
 
@@ -71,15 +78,8 @@ resource "aws_instance" "master" {
     INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
     # echo -e "[Global]\nRegion = eu-west-2" | sudo tee /etc/kubernetes/aws.conf
 
-
-    # sudo kubeadm init --cloud-provider=aws --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
+ 
     sudo kubeadm init  --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
-
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-    sleep 15
 
     echo "installing calico"
     sudo su
@@ -116,6 +116,45 @@ resource "aws_instance" "master" {
     aws s3 cp  s3://${random_pet.bucket_name.id}/ /home/ubuntu/ --recursive
     sudo echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bashrc
 
+
+    # # Install Helm
+    # echo "### Installing Helm ###"
+    # curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    # Add the AWS EKS Helm chart repository (for AWS Load Balancer Controller)
+    echo "### Adding AWS EKS Helm chart repository ###"
+    sudo helm repo add eks https://aws.github.io/eks-charts
+    sudo helm repo update
+
+    # Create the IAM role and service account for the AWS Load Balancer Controller
+    echo "### Creating IAM role and service account ###"
+    sudo kubectl create namespace ${NAMESPACE}
+
+    sudo eksctl create iamserviceaccount \
+      --name ${SERVICE_ACCOUNT} \
+      --namespace ${NAMESPACE} \
+      --cluster ${CLUSTER_NAME} \
+      --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKSLoadBalancerControllerPolicy \
+      --approve
+
+    # Install the AWS Load Balancer Controller
+    echo "### Installing AWS Load Balancer Controller ###"
+    sudo helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+      -n $NAMESPACE \
+      --set clusterName=${CLUSTER_NAME} \
+      --set serviceAccount.create=false \
+      --set serviceAccount.name=${SERVICE_ACCOUNT} \
+      --set region=${REGION} \
+      --set vpcId=${VPC_ID}
+
+    # Taint master nodes to allow scheduling on them (optional for small setups)
+    sudo kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
+
+    echo "### Kubernetes cluster setup with Cloud Controller Manager is complete ###"
+
+    echo "### You can now use kubectl to interact with your cluster ###"
+
+
   EOF
 
   provisioner "remote-exec" {
@@ -148,6 +187,7 @@ resource "aws_instance" "workers" {
   root_block_device {
     volume_size = 20
   }
+  subnet_id     = module.vpc.public_subnets[count.index]
   iam_instance_profile = aws_iam_instance_profile.worker.name
   tags = {
     Name                     = "worker-${count.index + 1}"
