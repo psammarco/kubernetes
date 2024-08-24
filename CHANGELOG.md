@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/bruvio/kubernetes/compare/1.2.2...1.3.0) (2024-08-24)
+
+
+### Features
+
+* update user data to deploy Kubernetes cluster with the Cloud Controller Manager (CCM) pre-configured ([b36baf1](https://github.com/bruvio/kubernetes/commit/b36baf142977d703c9e1d91835d85167c530aa61))
+
 ## [1.2.2](https://github.com/bruvio/kubernetes/compare/1.2.1...1.2.2) (2024-08-24)
 
 
