@@ -81,6 +81,8 @@ resource "aws_instance" "master" {
  
     sudo kubeadm init  --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
 
+
+
     echo "installing calico"
     sudo su
     export KUBECONFIG=/etc/kubernetes/admin.conf
@@ -128,12 +130,12 @@ resource "aws_instance" "master" {
 
     # Create the IAM role and service account for the AWS Load Balancer Controller
     echo "### Creating IAM role and service account ###"
-    sudo kubectl create namespace ${NAMESPACE}
+    sudo kubectl create namespace $NAMESPACE
 
     sudo eksctl create iamserviceaccount \
-      --name ${SERVICE_ACCOUNT} \
-      --namespace ${NAMESPACE} \
-      --cluster ${CLUSTER_NAME} \
+      --name $SERVICE_ACCOUNT \
+      --namespace $NAMESPACE \
+      --cluster $CLUSTER_NAME \
       --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKSLoadBalancerControllerPolicy \
       --approve
 
@@ -141,11 +143,11 @@ resource "aws_instance" "master" {
     echo "### Installing AWS Load Balancer Controller ###"
     sudo helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
       -n $NAMESPACE \
-      --set clusterName=${CLUSTER_NAME} \
+      --set clusterName=$CLUSTER_NAME \
       --set serviceAccount.create=false \
-      --set serviceAccount.name=${SERVICE_ACCOUNT} \
-      --set region=${REGION} \
-      --set vpcId=${VPC_ID}
+      --set serviceAccount.name=$SERVICE_ACCOUNT \
+      --set region=$REGION \
+      --set vpcId=$VPC_ID
 
     # Taint master nodes to allow scheduling on them (optional for small setups)
     sudo kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
