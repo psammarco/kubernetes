@@ -60,7 +60,7 @@ resource "aws_instance" "master" {
 
 
     sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget 
+    sudo apt-get install -y kubelet==1.31.0-1.1 kubeadm==1.31.0-1.1 kubectl==1.31.0-1.1 vim git curl wget 
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
 
@@ -81,7 +81,9 @@ resource "aws_instance" "master" {
 
  
     sudo kubeadm init  --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
-
+    sudo mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 
     echo "installing calico"
@@ -151,7 +153,7 @@ resource "aws_instance" "master" {
       --set vpcId=$VPC_ID
 
     # Taint master nodes to allow scheduling on them (optional for small setups)
-    sudo kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
+    sudo kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
 
     echo "### Kubernetes cluster setup with Cloud Controller Manager is complete ###"
 
@@ -233,7 +235,7 @@ resource "aws_instance" "workers" {
 
 
     sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget 
+    sudo apt-get install -y kubelet==1.31.0-1.1 kubeadm==1.31.0-1.1 kubectl==1.31.0-1.1 vim git curl wget 
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
 
