@@ -111,9 +111,11 @@ resource "aws_instance" "master" {
   root_block_device {
     volume_size = 20
   }
-  iam_instance_profile = aws_iam_instance_profile.example.name
+  iam_instance_profile = aws_iam_instance_profile.master.name
   tags = {
-    Name = "master"
+    Name                     = "master"
+    "kubernetes.io/cluster/" = "bruvio"
+
   }
   private_dns_name_options {
     hostname_type = "resource-name"
@@ -131,6 +133,7 @@ resource "aws_instance" "master" {
 
     # Install Docker
     sudo apt-get install -y docker.io
+    sudo echo '{"exec-opts": ["native.cgroupdriver=systemd"], "log-driver": "json-file", "log-opts": {"max-size": "100m"}, "storage-driver": "overlay2"}' > /etc/docker/daemon.json
     sudo systemctl enable docker
     sudo systemctl start docker
 
@@ -164,9 +167,11 @@ resource "aws_instance" "master" {
     sudo systemctl enable kubelet
     sudo kubeadm config images pull --cri-socket unix:///run/containerd/containerd.sock
     INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+    # echo -e "[Global]\nRegion = eu-west-2" | sudo tee /etc/kubernetes/aws.conf
 
 
-    sudo kubeadm init --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
+    # sudo kubeadm init --cloud-provider=aws --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
+    sudo kubeadm init  --apiserver-advertise-address=$INSTANCE_PRIVATE_IP --pod-network-cidr=192.168.0.0/16 
 
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -207,7 +212,7 @@ resource "aws_instance" "master" {
 
     # copy all files from s3 to the master node
     aws s3 cp  s3://${random_pet.bucket_name.id}/ /home/ubuntu/ --recursive
-
+    sudo echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bashrc
 
   EOF
 
@@ -223,6 +228,7 @@ resource "aws_instance" "master" {
       host        = self.public_ip
     }
   }
+
 }
 
 # provider "time" {}
@@ -240,9 +246,10 @@ resource "aws_instance" "workers" {
   root_block_device {
     volume_size = 20
   }
-  iam_instance_profile = aws_iam_instance_profile.example.name
+  iam_instance_profile = aws_iam_instance_profile.worker.name
   tags = {
-    Name = "worker-${count.index + 1}"
+    Name                     = "worker-${count.index + 1}"
+    "kubernetes.io/cluster/" = "bruvio"
   }
   private_dns_name_options {
     hostname_type = "resource-name"
@@ -261,6 +268,8 @@ resource "aws_instance" "workers" {
 
     # Install Docker
     sudo apt-get install -y docker.io
+    sudo echo '{"exec-opts": ["native.cgroupdriver=systemd"], "log-driver": "json-file", "log-opts": {"max-size": "100m"}, "storage-driver": "overlay2"}' > /etc/docker/daemon.json
+
     sudo systemctl enable docker
     sudo systemctl start docker
 
@@ -380,6 +389,17 @@ resource "aws_s3_bucket_object" "setup" {
   etag = filemd5("./setup_ks8.sh")
 }
 
+resource "aws_s3_bucket_object" "dashboard" {
+
+
+  bucket = aws_s3_bucket.this.id
+  key    = "setup_dashboard.sh"   # The destination path in S3
+  source = "./setup_dashboard.sh" # The path to the file on your local machine
+
+  acl  = "private"
+  etag = filemd5("./setup_dashboard.sh")
+}
+
 variable "folder1_path" {
   type    = string
   default = "../simple"
@@ -395,7 +415,7 @@ variable "versioning" {
 }
 
 
-resource "aws_iam_role" "example" {
+resource "aws_iam_role" "master" {
   name = "ec2-role"
 
   assume_role_policy = jsonencode({
@@ -412,9 +432,9 @@ resource "aws_iam_role" "example" {
   })
 }
 
-resource "aws_iam_role_policy" "example" {
+resource "aws_iam_role_policy" "master" {
   name = "example-policy"
-  role = aws_iam_role.example.id
+  role = aws_iam_role.master.id
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -426,6 +446,116 @@ resource "aws_iam_role_policy" "example" {
         Effect   = "Allow",
         Resource = "*",
       },
+      {
+        Effect = "Allow",
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "ec2:DescribeInstances",
+          "ec2:DescribeRegions",
+          "ec2:DescribeRouteTables",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeVolumes",
+          "ec2:CreateSecurityGroup",
+          "ec2:CreateTags",
+          "ec2:CreateVolume",
+          "ec2:ModifyInstanceAttribute",
+          "ec2:ModifyVolume",
+          "ec2:AttachVolume",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:CreateRoute",
+          "ec2:DeleteRoute",
+          "ec2:DeleteSecurityGroup",
+          "ec2:DeleteVolume",
+          "ec2:DetachVolume",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:DescribeVpcs",
+          "elasticloadbalancing:AddTags",
+          "elasticloadbalancing:AttachLoadBalancerToSubnets",
+          "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+          "elasticloadbalancing:CreateLoadBalancer",
+          "elasticloadbalancing:CreateLoadBalancerPolicy",
+          "elasticloadbalancing:CreateLoadBalancerListeners",
+          "elasticloadbalancing:ConfigureHealthCheck",
+          "elasticloadbalancing:DeleteLoadBalancer",
+          "elasticloadbalancing:DeleteLoadBalancerListeners",
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeLoadBalancerAttributes",
+          "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+          "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+          "elasticloadbalancing:ModifyLoadBalancerAttributes",
+          "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+          "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+          "elasticloadbalancing:AddTags",
+          "elasticloadbalancing:CreateListener",
+          "elasticloadbalancing:CreateTargetGroup",
+          "elasticloadbalancing:DeleteListener",
+          "elasticloadbalancing:DeleteTargetGroup",
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeLoadBalancerPolicies",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeTargetHealth",
+          "elasticloadbalancing:ModifyListener",
+          "elasticloadbalancing:ModifyTargetGroup",
+          "elasticloadbalancing:RegisterTargets",
+          "elasticloadbalancing:DeregisterTargets",
+          "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+          "iam:CreateServiceLinkedRole",
+          "kms:DescribeKey"
+        ],
+        Resource = "*"
+      }
+    ],
+  })
+}
+
+resource "aws_iam_role" "worker" {
+  name = "ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+      },
+    ],
+  })
+}
+resource "aws_iam_role_policy" "worker" {
+  name = "example-policy"
+  role = aws_iam_role.worker.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:*",
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeRegions",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetRepositoryPolicy",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages",
+          "ecr:BatchGetImage"
+        ],
+        Resource = "*"
+      }
     ],
   })
 }
