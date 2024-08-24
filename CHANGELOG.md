@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/bruvio/kubernetes/compare/1.2.1...1.2.2) (2024-08-24)
+
+
+### Bug Fixes
+
+* improve tags and permission to ec2 ([6265e75](https://github.com/bruvio/kubernetes/commit/6265e7531fb5fee84cb1685b18f60d2c77d2bcc6))
+
 ## [1.2.1](https://github.com/bruvio/kubernetes/compare/1.2.0...1.2.1) (2024-08-22)
 
 
