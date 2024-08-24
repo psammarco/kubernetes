@@ -34,3 +34,13 @@ variable "versioning" {
 variable "key-name" {
   default = "deployer-key"
 }
+
+variable "instance_type_master" {
+  description = "EC2 instance type for master node"
+  default     = "t2.medium"
+}
+
+variable "instance_type_worker" {
+  description = "EC2 instance type for master node"
+  default     = "t2.medium"
+}

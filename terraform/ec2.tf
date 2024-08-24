@@ -7,13 +7,13 @@
 
 resource "aws_instance" "master" {
   ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
-  instance_type   = "t2.large"
+  instance_type   = var.instance_type_master
   security_groups = [aws_security_group.control_plane_sg.name]
   key_name        = aws_key_pair.deployer.key_name
   root_block_device {
     volume_size = 20
   }
-  subnet_id     = module.vpc.public_subnets[0]
+  subnet_id            = module.vpc.public_subnets[0]
   iam_instance_profile = aws_iam_instance_profile.master.name
   tags = {
     Name                     = "master"
@@ -181,13 +181,13 @@ resource "aws_instance" "master" {
 resource "aws_instance" "workers" {
   count           = 2
   ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
-  instance_type   = "t2.large"
+  instance_type   = var.instance_type_worker
   security_groups = [aws_security_group.control_plane_sg.name]
   key_name        = aws_key_pair.deployer.key_name
   root_block_device {
     volume_size = 20
   }
-  subnet_id     = module.vpc.public_subnets[count.index]
+  subnet_id            = module.vpc.public_subnets[count.index]
   iam_instance_profile = aws_iam_instance_profile.worker.name
   tags = {
     Name                     = "worker-${count.index + 1}"
