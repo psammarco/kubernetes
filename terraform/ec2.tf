@@ -6,10 +6,10 @@
 
 
 resource "aws_instance" "master" {
-  ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
-  instance_type   = var.instance_type_master
-  security_groups = [aws_security_group.control_plane_sg.name]
-  key_name        = aws_key_pair.deployer.key_name
+  ami                    = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
+  instance_type          = var.instance_type_master
+  vpc_security_group_ids = [aws_security_group.control_plane_sg.id]
+  key_name               = aws_key_pair.deployer.key_name
   root_block_device {
     volume_size = 20
   }
@@ -181,11 +181,11 @@ resource "aws_instance" "master" {
 # }
 
 resource "aws_instance" "workers" {
-  count           = 2
-  ami             = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
-  instance_type   = var.instance_type_worker
-  security_groups = [aws_security_group.control_plane_sg.name]
-  key_name        = aws_key_pair.deployer.key_name
+  count                  = 2
+  ami                    = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
+  instance_type          = var.instance_type_worker
+  vpc_security_group_ids = [aws_security_group.control_plane_sg.id]
+  key_name               = aws_key_pair.deployer.key_name
   root_block_device {
     volume_size = 20
   }
@@ -257,10 +257,7 @@ resource "aws_instance" "workers" {
 
 
 
-# Generate a random bucket name
-resource "random_pet" "bucket_name" {
-  length = 2
-}
+
 
 
 

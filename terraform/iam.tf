@@ -106,7 +106,7 @@ resource "aws_iam_role_policy" "master" {
 }
 
 resource "aws_iam_role" "worker" {
-  name = "ec2-role"
+  name = "ec2-role-worker"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",

@@ -1,3 +1,8 @@
+# Generate a random bucket name
+resource "random_pet" "bucket_name" {
+  length = 2
+}
+
 resource "aws_s3_bucket" "this" {
   bucket        = random_pet.bucket_name.id
   force_destroy = true
