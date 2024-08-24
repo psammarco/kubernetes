@@ -1,3 +1,11 @@
+## [1.3.2](https://github.com/bruvio/kubernetes/compare/1.3.1...1.3.2) (2024-08-24)
+
+
+### Bug Fixes
+
+* associate public ip with ec2 ([eb9db8c](https://github.com/bruvio/kubernetes/commit/eb9db8ca9ca966a5990b0c715729c63e15e5708a))
+* fix ec2 security group ([97a7166](https://github.com/bruvio/kubernetes/commit/97a7166e79ac5f1c00d0845337d1dd36618c77f9))
+
 ## [1.3.1](https://github.com/bruvio/kubernetes/compare/1.3.0...1.3.1) (2024-08-24)
 
 
