@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/bruvio/kubernetes/compare/1.3.2...1.3.3) (2024-08-24)
+
+
+### Bug Fixes
+
+* pin kubernetes version, fix installation script ([58d10db](https://github.com/bruvio/kubernetes/commit/58d10db396882032ee4a393ad013c9124c033e28))
+
 ## [1.3.2](https://github.com/bruvio/kubernetes/compare/1.3.1...1.3.2) (2024-08-24)
 
 
