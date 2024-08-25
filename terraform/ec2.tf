@@ -95,7 +95,6 @@ resource "aws_instance" "master" {
     # Step 6: Install Network Plugin on the Master (Calico)
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/tigera-operator.yaml 
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/custom-resources.yaml
-    kubectl create -f custom-resources.yaml
 
 
     # Output the join command for the worker nodes

@@ -68,3 +68,7 @@ output "public_subnets_cidr_blocks" {
   description = "List of cidr_blocks of public subnets"
   value       = module.vpc.public_subnets_cidr_blocks
 }
+
+output "aws_iam_role_master" {
+    value = aws_iam_role.master.arn
+}
