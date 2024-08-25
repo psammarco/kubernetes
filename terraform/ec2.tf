@@ -135,13 +135,17 @@ resource "aws_instance" "master" {
     echo "### Creating IAM role and service account ###"
     sudo kubectl create namespace $NAMESPACE
 
-    sudo eksctl create iamserviceaccount \
-      --name $SERVICE_ACCOUNT \
-      --namespace $NAMESPACE \
-      --cluster $CLUSTER_NAME \
-      --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKSLoadBalancerControllerPolicy \
-      --approve
+    sudo bash -c 'cat > aws-lb-controller-sa.yaml <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::546123287190:role/ec2-role
+EOF' && sudo kubectl apply -f aws-lb-controller-sa.yaml
 
+    sudo kubectl apply -f serviceaccount.yaml
     # Install the AWS Load Balancer Controller
     echo "### Installing AWS Load Balancer Controller ###"
     sudo helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
