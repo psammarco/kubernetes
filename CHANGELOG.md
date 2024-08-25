@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/bruvio/kubernetes/compare/1.3.3...1.3.4) (2024-08-25)
+
+
+### Bug Fixes
+
+* manually attach iam role to service account ([f9bfb3a](https://github.com/bruvio/kubernetes/commit/f9bfb3a9777d7592f37f5fcb768c9bc066a0f6ef))
+
 ## [1.3.3](https://github.com/bruvio/kubernetes/compare/1.3.2...1.3.3) (2024-08-24)
 
 
