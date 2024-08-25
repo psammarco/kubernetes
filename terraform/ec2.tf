@@ -60,7 +60,8 @@ resource "aws_instance" "master" {
 
 
     sudo apt-get update
-    sudo apt-get install -y kubelet==1.31.0-1.1 kubeadm==1.31.0-1.1 kubectl==1.31.0-1.1 vim git curl wget 
+    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget nftables
+ 
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
 
@@ -104,6 +105,7 @@ resource "aws_instance" "master" {
 
     echo "installing ks9 dashboard"
     curl -sS https://webinstall.dev/k9s | bash
+    sudo su
     source ~/.config/envman/PATH.env
     k9s version
 
@@ -121,7 +123,14 @@ resource "aws_instance" "master" {
     aws s3 cp  s3://${random_pet.bucket_name.id}/ /home/ubuntu/ --recursive
     sudo echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bashrc
 
+    sudo su 
+    export KUBECONFIG=/etc/kubernetes/admin.conf
 
+    # # Installing ekctl
+    echo "### Installing ekctl ###"
+    curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+    sudo mv /tmp/eksctl /usr/local/bin
+    sudo eksctl version
     # # Install Helm
     # echo "### Installing Helm ###"
     # curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -134,7 +143,8 @@ resource "aws_instance" "master" {
     # Create the IAM role and service account for the AWS Load Balancer Controller
     echo "### Creating IAM role and service account ###"
     sudo kubectl create namespace $NAMESPACE
-
+    export AWS_REGION="eu-west-2"
+    
     sudo bash -c 'cat > aws-lb-controller-sa.yaml <<EOF
 apiVersion: v1
 kind: ServiceAccount
@@ -157,7 +167,8 @@ EOF' && sudo kubectl apply -f aws-lb-controller-sa.yaml
       --set vpcId=$VPC_ID
 
     # Taint master nodes to allow scheduling on them (optional for small setups)
-    sudo kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
+    sudo su
+    kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
 
     echo "### Kubernetes cluster setup with Cloud Controller Manager is complete ###"
 
@@ -168,7 +179,7 @@ EOF' && sudo kubectl apply -f aws-lb-controller-sa.yaml
 
   provisioner "remote-exec" {
     inline = [
-      "/bin/bash -c \"timeout 300 sed '/finished at/q' <(tail -f /var/log/cloud-init-output.log)\""
+      "/bin/bash -c \"timeout 600 sed '/finished at/q' <(tail -f /var/log/cloud-init-output.log)\""
     ]
 
     connection {
@@ -239,7 +250,8 @@ resource "aws_instance" "workers" {
 
 
     sudo apt-get update
-    sudo apt-get install -y kubelet==1.31.0-1.1 kubeadm==1.31.0-1.1 kubectl==1.31.0-1.1 vim git curl wget 
+    sudo apt-get install -y kubelet kubeadm kubectl vim git curl wget nftables
+
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
 
@@ -259,7 +271,21 @@ resource "aws_instance" "workers" {
     
   EOF
   # depends_on = [aws_instance.master,time_sleep.wait]
-  depends_on = [aws_instance.master]
+  depends_on = [aws_instance.master, aws_security_group.control_plane_sg, module.vpc]
+
+  provisioner "remote-exec" {
+    inline = [
+      "/bin/bash -c \"timeout 600 sed '/finished at/q' <(tail -f /var/log/cloud-init-output.log)\""
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("deployer_key")
+      host        = self.public_ip
+    }
+
+  }
 }
 
 

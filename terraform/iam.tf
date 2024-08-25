@@ -97,7 +97,8 @@ resource "aws_iam_role_policy" "master" {
           "elasticloadbalancing:DeregisterTargets",
           "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
           "iam:CreateServiceLinkedRole",
-          "kms:DescribeKey"
+          "kms:DescribeKey",
+          "eks:*"
         ],
         Resource = "*"
       }
