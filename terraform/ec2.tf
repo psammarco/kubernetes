@@ -125,45 +125,7 @@ resource "aws_instance" "master" {
     sudo su 
     export KUBECONFIG=/etc/kubernetes/admin.conf
 
-    # # Installing ekctl
-    echo "### Installing ekctl ###"
-    curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-    sudo mv /tmp/eksctl /usr/local/bin
-    sudo eksctl version
-    # # Install Helm
-    # echo "### Installing Helm ###"
-    # curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-
-    # Add the AWS EKS Helm chart repository (for AWS Load Balancer Controller)
-    echo "### Adding AWS EKS Helm chart repository ###"
-    sudo helm repo add eks https://aws.github.io/eks-charts
-    sudo helm repo update
-
-    # Create the IAM role and service account for the AWS Load Balancer Controller
-    echo "### Creating IAM role and service account ###"
-    sudo kubectl create namespace $NAMESPACE
-    export AWS_REGION="eu-west-2"
     
-    sudo bash -c 'cat > aws-lb-controller-sa.yaml <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-load-balancer-controller
-  namespace: kube-system
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::546123287190:role/ec2-role
-EOF' && sudo kubectl apply -f aws-lb-controller-sa.yaml
-
-    sudo kubectl apply -f serviceaccount.yaml
-    # Install the AWS Load Balancer Controller
-    echo "### Installing AWS Load Balancer Controller ###"
-    sudo helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-      -n $NAMESPACE \
-      --set clusterName=$CLUSTER_NAME \
-      --set serviceAccount.create=false \
-      --set serviceAccount.name=$SERVICE_ACCOUNT \
-      --set region=$REGION \
-      --set vpcId=$VPC_ID
 
     # Taint master nodes to allow scheduling on them (optional for small setups)
     sudo su

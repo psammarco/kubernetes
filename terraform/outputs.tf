@@ -70,5 +70,5 @@ output "public_subnets_cidr_blocks" {
 }
 
 output "aws_iam_role_master" {
-    value = aws_iam_role.master.arn
+  value = aws_iam_role.master.arn
 }
