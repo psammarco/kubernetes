@@ -1,3 +1,11 @@
+## [1.3.5](https://github.com/bruvio/kubernetes/compare/1.3.4...1.3.5) (2024-08-25)
+
+
+### Bug Fixes
+
+* add iam role output ([f9b7abc](https://github.com/bruvio/kubernetes/commit/f9b7abc336b49f9e131d66f47a72d11352b7f788))
+* add iam role output ([84a62f8](https://github.com/bruvio/kubernetes/commit/84a62f871c51415be1a59e0ef2629b0be27f379f))
+
 ## [1.3.4](https://github.com/bruvio/kubernetes/compare/1.3.3...1.3.4) (2024-08-25)
 
 
