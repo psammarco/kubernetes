@@ -36,8 +36,9 @@ resource "aws_instance" "master" {
     sudo apt-get update -y
     sudo apt-get upgrade -y
 
-    # Set hostname based on index∫
-    HOSTNAME="master"
+    # Set hostname based on index
+    HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
+    # HOSTNAME="master"
     sudo hostnamectl set-hostname $HOSTNAME
     sudo systemctl restart systemd-hostnamed
 
@@ -131,7 +132,6 @@ resource "aws_instance" "master" {
     sudo su
     kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
 
-    echo "### Kubernetes cluster setup with Cloud Controller Manager is complete ###"
 
     echo "### You can now use kubectl to interact with your cluster ###"
 
@@ -188,6 +188,7 @@ resource "aws_instance" "workers" {
 
     # Set hostname based on index∫
     HOSTNAME="worker-${count.index + 1}"
+    HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
     sudo hostnamectl set-hostname $HOSTNAME
     sudo systemctl restart systemd-hostnamed
 
@@ -228,7 +229,7 @@ resource "aws_instance" "workers" {
 
     sudo systemctl enable kubelet
     aws s3 cp  s3://${random_pet.bucket_name.id}/kubeadm_join_command.sh /home/ubuntu/kubeadm_join_command.sh
-    sudo ./kubeadm_join_command.sh
+    sudo bash ./kubeadm_join_command.sh
     
   EOF
   # depends_on = [aws_instance.master,time_sleep.wait]

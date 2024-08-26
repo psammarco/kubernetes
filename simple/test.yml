@@ -1,21 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
+  name: nginx
   labels:
-    app: my-app
+    app: test
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: my-app
+      app: test
   template:
     metadata:
       labels:
-        app: my-app
+        app: test
     spec:
       containers:
-      - name: my-container
+      - name: nginx
         image: nginx:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
+          protocol: TCP
