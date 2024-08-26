@@ -1,3 +1,15 @@
+## [1.3.6](https://github.com/bruvio/kubernetes/compare/1.3.5...1.3.6) (2024-08-26)
+
+
+### Bug Fixes
+
+* test simple ([dc2e7b8](https://github.com/bruvio/kubernetes/commit/dc2e7b806f958899e55a49a4fbfb46302d5a1cb7))
+
+
+### Reverts
+
+* remove installation of eksctl ([c240bd5](https://github.com/bruvio/kubernetes/commit/c240bd565ffca06e2c68e6ba504a35be4d3be35e))
+
 ## [1.3.5](https://github.com/bruvio/kubernetes/compare/1.3.4...1.3.5) (2024-08-25)
 
 
