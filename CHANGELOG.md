@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/bruvio/kubernetes/compare/1.3.6...1.3.7) (2024-08-28)
+
+
+### Bug Fixes
+
+* use variable to control worker node deployment ([f64074b](https://github.com/bruvio/kubernetes/commit/f64074bfc9acf8180ec49e1ab913960e4bd6e0c8))
+
 ## [1.3.6](https://github.com/bruvio/kubernetes/compare/1.3.5...1.3.6) (2024-08-26)
 
 
