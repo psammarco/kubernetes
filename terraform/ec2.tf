@@ -161,7 +161,7 @@ resource "aws_instance" "master" {
 # }
 
 resource "aws_instance" "workers" {
-  count                  = 2
+  count                  = var.enable_workers ? 2 : 0
   ami                    = "ami-08aa7f71c822e5cc9" # Ubuntu AMI
   instance_type          = var.instance_type_worker
   vpc_security_group_ids = [aws_security_group.control_plane_sg.id]
