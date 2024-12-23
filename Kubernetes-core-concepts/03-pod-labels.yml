@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: labelpod
+  labels:
+    environment: staging
+    tier: frontend
+spec:
+  containers:
+  - name: testcontainer
+    image: nginx
+    ports:
+     - containerPort: 80
+

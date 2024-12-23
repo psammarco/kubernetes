@@ -1,0 +1,37 @@
+after creating the cluster I can ssh into it using 
+
+
+ssh -i deploer_key ubuntu@<ip>
+
+if I wanted to handle the cluster from within the instance I would need to 
+```
+sudo su
+export KUBECONFIG=/etc/kubernetes/admin.conf
+```
+
+if instead I prefer to access the cluster from my local machine I need first to copy this file to my local machine
+```
+ls -l /etc/kubernetes/admin.conf
+ sudo chown ubuntu:ubuntu /etc/kubernetes/admin.conf
+scp -i deployer_key ubuntu@18.132.199.141:/etc/kubernetes/admin.conf .
+```
+
+after i need to grab the public ip of the master node 
+using 
+```
+terraform output
+
+```
+cp admin.conf ~/.kube/config
+
+
+we need to update it with the external IP address of the master note. Also, remember to open port 6 4 4 3 for inbound traffic to the master note. In the master note,
+we need to update the API server certificates with this public IP address. Let's go back to the master note. This is the current API certificate and the key, I will delete the existing ones and will replace them with new certificates.
+
+sudo ls /etc/kubernetes/pki/apiserver.*
+ sudo rm /etc/kubernetes/pki/apiserver.*
+ sudo kubeadm init phase certs apiserver --apiserver-cert-extra-sans=<public_ip>
+
+
+
+This is the command to generate the certificates and I have added the public IP address of the master node, and we can see that the certificate and the key have been generated. Again, let's exit from the master node now, 
