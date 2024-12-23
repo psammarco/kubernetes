@@ -38,7 +38,7 @@ resource "aws_instance" "master" {
 
     # Set hostname based on index
     HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
-    # HOSTNAME="master"
+    HOSTNAME="master"sc
     sudo hostnamectl set-hostname $HOSTNAME
     sudo systemctl restart systemd-hostnamed
 
@@ -130,7 +130,7 @@ resource "aws_instance" "master" {
 
     # Taint master nodes to allow scheduling on them (optional for small setups)
     sudo su
-    kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
+    kubectl taint nodes $hostname node-role.kubernetes.io/control-plane:NoSchedule-
 
 
     echo "### You can now use kubectl to interact with your cluster ###"

@@ -30,13 +30,13 @@ resource "aws_s3_bucket_object" "setup" {
   etag = filemd5("./setup_ks8.sh")
 }
 
-resource "aws_s3_bucket_object" "dashboard" {
+# resource "aws_s3_bucket_object" "dashboard" {
 
 
-  bucket = aws_s3_bucket.this.id
-  key    = "setup_dashboard.sh"   # The destination path in S3
-  source = "./setup_dashboard.sh" # The path to the file on your local machine
+#   bucket = aws_s3_bucket.this.id
+#   key    = "setup_dashboard.sh"   # The destination path in S3
+#   source = "./setup_dashboard.sh" # The path to the file on your local machine
 
-  acl  = "private"
-  etag = filemd5("./setup_dashboard.sh")
-}
+#   acl  = "private"
+#   etag = filemd5("./setup_dashboard.sh")
+# }
