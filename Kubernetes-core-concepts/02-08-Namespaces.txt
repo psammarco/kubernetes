@@ -1,0 +1,1 @@
+1:00kubectl get namespaces2:20kubectl api-resources --namespaced=true2:50kubectl api-resources --namespaced=false3:56kubectl get ns4:05kubectl create namespace alpha5:02kubectl apply -f 02-pod-alpha-ns.yaml5:14kubectl get pods -n alpha5:30kubectl get pods5:40kubectl get pods -A

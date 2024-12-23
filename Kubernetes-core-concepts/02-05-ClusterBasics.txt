@@ -1,0 +1,1 @@
+1:28kubectl get pods --all-namespaces1:56kubectl get pods --all-namespaces -o wide | grep -i apiserver2:40kubectl get pods --all-namespaces -o wide | grep -i etcd3:35kubectl get pods --all-namespaces -o wide | grep -i kube-scheduler6:04kubectl get pods --all-namespaces -o wide | grep -i kube-proxy

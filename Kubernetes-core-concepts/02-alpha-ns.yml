@@ -1,12 +1,13 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: testcontainer
+  name: testpod
   labels:
-    name: testcontainer
+    name: testpod
+  namespace: alpha
 spec:
   containers:
-  - name: testcontainer
+  - name: testpod
     image: ubuntu
     # command: ['sh', '-c', 'echo "Hello bruvio!" && sleep 10']
     command: ['sh', '-c', 'tail -f /dev/null']
@@ -15,4 +16,5 @@ spec:
     #     memory: "128Mi"
     #     cpu: "500m"
   restartPolicy: Never
+
 

@@ -1,0 +1,1 @@
+4:14kubectl get pods4:20kubectl apply -f -1-pod.yaml  kubectl get pods4:35kubectl logs testpod6:50kubectl get pods  kubectl delete pod testpod7:05kubectl apply -f -1-pod.yaml  kubectl get pods

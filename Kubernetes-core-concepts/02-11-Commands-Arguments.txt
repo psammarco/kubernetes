@@ -1,0 +1,1 @@
+1:33kubectl -n alpha get pods1:40kubectl -n alpha exec -it <pod-name> -- sh  ps -ef3:10kubectl apply -f 06-deployment-ubuntu.yaml  kubectl -n alpha get pods  kubectl -n alpha logs <pod-name>  kubectl -n alpha get pods4:25kubectl apply -f 07-deployment-curl.yaml  kubectl -n alpha get pods  kubectl -n alpha logs <pod-name>

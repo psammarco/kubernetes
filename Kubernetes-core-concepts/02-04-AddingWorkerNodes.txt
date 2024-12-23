@@ -1,0 +1,1 @@
+0:20kubectl get nodes1:47sudo kubeadm join 172.31.39.176:6443 --token <token> --discovery-token-ca-cert-hash sha256:<ca-cert-hash>  --cri-socket unix:///var/run/containerd/containerd.sock 2:10kubectl get nodes2:27kubectl label node <node-name> node-role.kubernetes.io/worker=worker3:10kubectl get nodes -o wide3:50kubectl describe node <node-name>

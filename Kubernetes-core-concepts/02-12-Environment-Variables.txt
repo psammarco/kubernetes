@@ -1,0 +1,1 @@
+1:05kubectl apply -f 08-deployment-env.yaml  kubectl -n alpha get pods  kubectl -n alpha exec -it <pod-name> -- sh  printenv2:20kubectl apply -f 09-deployment-dependent-env.yaml  kubectl -n alpha get pods  kubectl -n alpha exec -it <pod-name> -- printenv
