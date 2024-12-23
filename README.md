@@ -1,10 +1,11 @@
 # Kubernetes Cluster Deployment with Terraform
 
-This repository is a fork of [psammarco/kubernetes](https://github.com/psammarco/kubernetes).
+This repository is to track my progresso to achieve [CKA cerficication](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/) 
 
 ## Overview
 
 This project automates the deployment of a Kubernetes cluster using Terraform. 
+It also contains manifest and documentation to support learning Kubernetes.
 
 ## HOW
 
