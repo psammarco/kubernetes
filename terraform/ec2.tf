@@ -38,7 +38,7 @@ resource "aws_instance" "master" {
 
     # Set hostname based on index
     HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
-    HOSTNAME="master"sc
+    HOSTNAME="master"
     sudo hostnamectl set-hostname $HOSTNAME
     sudo systemctl restart systemd-hostnamed
 
