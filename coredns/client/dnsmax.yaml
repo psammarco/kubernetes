@@ -15,7 +15,7 @@ spec:
       dnsPolicy: "None"
       dnsConfig:
         nameservers:
-        - 10.43.229.169 
+        - 10.43.68.254
         searches:
         - intranet.local  # replace with yours
       containers:
