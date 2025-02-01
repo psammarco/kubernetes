@@ -4,7 +4,6 @@
 
 image:
   repository: coredns/coredns
-  # Overrides the image tag whose default is the chart appVersion.
   tag: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -83,7 +82,7 @@ servers:
       lameduck 5s
   - name: ready
   - name: kubernetes
-    parameters: intranet.local in-addr.arpa ip6.arpa
+    parameters: cluster.local intranet.local in-addr.arpa ip6.arpa
     configBlock: |-
       pods insecure
       endpoint_pod_names
