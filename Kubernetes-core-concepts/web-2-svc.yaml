@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-2-service
+  namespace: cka-practice
+spec:
+  type: NodePort
+  selector:
+    app: web-2
+  ports:
+    - protocol: TCP
+      port: 80           # Service port
+      targetPort: 80     # Container port
+      nodePort: 30080    # Exposed port on the node (must be between 30000-32767)
+
+
+# kubectl run debug-pod --rm -it --image=nicolaka/netshoot -n cka-practice -- /bin/sh
+# curl -v http://10.96.198.201:80
+# curl -v http://web-2-service.cka-practice.svc.cluster.local
+# nslookup web-2-service.cka-practice.svc.cluster.local
+
+# Access Type Command Works From
+# ClusterIP curl -kL http://10.96.198.201:80  Inside a pod
+# NodePort  curl -kL http://172.18.0.3:30080  Outside cluster (local machine)
+# KIND IP curl -kL http://<KIND-IP>:30080 KIND setups
+# Port Forward  kubectl port-forward svc/web-2-service 8080:80 -n cka-practice
+# curl -kL http://127.0.0.1:8080  Anywhere
