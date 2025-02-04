@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      name: grafana
+      phase: prod
+  template:
+    metadata:
+      labels:
+        name: grafana
+        phase: prod
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: grafana
+          image: docker.io/grafana/grafana:9.3.1
+          env:
+            - name: GF_PATHS_CONFIG
+              value: "/etc/grafana/custom.ini"
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 5
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /robots.txt
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 200Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/grafana
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: providers
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards-etcd
+              mountPath: /etc/grafana/dashboards/etcd
+            - name: dashboards-node-exporter
+              mountPath: /etc/grafana/dashboards/node-exporter
+            - name: dashboards-prom
+              mountPath: /etc/grafana/dashboards/prom
+            - name: dashboards-k8s
+              mountPath: /etc/grafana/dashboards/k8s
+            - name: dashboards-k8s-nodes
+              mountPath: /etc/grafana/dashboards/k8s-nodes
+            - name: dashboards-k8s-resources-1
+              mountPath: /etc/grafana/dashboards/k8s-resources-1
+            - name: dashboards-k8s-resources-2
+              mountPath: /etc/grafana/dashboards/k8s-resources-2
+            - name: dashboards-k8s-network
+              mountPath: /etc/grafana/dashboards/k8s-network
+            - name: dashboards-coredns
+              mountPath: /etc/grafana/dashboards/coredns
+            - name: dashboards-nginx-ingress
+              mountPath: /etc/grafana/dashboards/nginx-ingress
+      volumes:
+        - name: config
+          configMap:
+            name: grafana-config
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: providers
+          configMap:
+            name: grafana-providers
+        - name: dashboards-etcd
+          configMap:
+            name: grafana-dashboards-etcd
+        - name: dashboards-node-exporter
+          configMap:
+            name: grafana-dashboards-node-exporter
+        - name: dashboards-prom
+          configMap:
+            name: grafana-dashboards-prom
+        - name: dashboards-k8s
+          configMap:
+            name: grafana-dashboards-k8s
+        - name: dashboards-k8s-nodes
+          configMap:
+            name: grafana-dashboards-k8s-nodes
+        - name: dashboards-k8s-resources-1
+          configMap:
+            name: grafana-dashboards-k8s-resources-1
+        - name: dashboards-k8s-network
+          configMap:
+            name: grafana-dashboards-k8s-network
+        - name: dashboards-k8s-resources-2
+          configMap:
+            name: grafana-dashboards-k8s-resources-2
+        - name: dashboards-coredns
+          configMap:
+            name: grafana-dashboards-coredns
+        - name: dashboards-nginx-ingress
+          configMap:
+            name: grafana-dashboards-nginx-ingress
+

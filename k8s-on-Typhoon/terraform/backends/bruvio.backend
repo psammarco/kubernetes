@@ -1,0 +1,2 @@
+bucket         = "terraform-state-bucket-546123287190"
+dynamodb_table = "terraform-lock-546123287190"

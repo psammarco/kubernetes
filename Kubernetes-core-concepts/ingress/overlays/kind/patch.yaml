@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service-a
+spec:
+  rules:
+  - host: public.my-services.com  # New host injected here
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: service-b
+spec:
+  rules:
+  - host: public.my-services.com  # New host injected here
