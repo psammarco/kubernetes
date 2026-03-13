@@ -4,13 +4,24 @@ This CoreDNS configuration serves as the primary DNS server for your network or 
 ## Installation
 ```
 helm repo add coredns https://coredns.github.io/helm
+
+# If your cluster already ships with its own CoreDNS deployment, the ConfigMap already exists but isn't Helm-managed. You need to label/annotate it before Helm can adopt it.
+for resource in deployment/coredns service/kube-dns serviceaccount/coredns clusterrole/system:coredns clusterrolebinding/system:coredns; do
+  kubectl label $resource -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || \
+  kubectl label $resource app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null
+  kubectl annotate $resource -n kube-system \
+    meta.helm.sh/release-name=coredns \
+    meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || \
+  kubectl annotate $resource \
+    meta.helm.sh/release-name=coredns \
+    meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null
+done
+
+
 helm install -f helm/values.yaml coredns coredns/coredns -n kube-system
 ```
 
 ## Quick breakdown
-- Make sure it does not clash with any existing CoreDNS deployment;
-~~- Replace the nameserver IP in client/dnsmax.yaml with the coredns Service ClusterIP;~~
-- Declaring the nameserver IP is no longer necessary when deploying CoreDNS cluster-wide {isClusterService: true}
 - Handles queries for the "intranet.local" subdomain;
 - Pods must be part of a Service in order for local DNS resolution to work between pods;
 
