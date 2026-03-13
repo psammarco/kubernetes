@@ -1,7 +1,26 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dnsmax
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dnsmax
+  namespace: dnsmax
+spec:
+  clusterIP: None
+  selector:
+    app: dnsmax
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dnsmax
+  namespace: dnsmax
 spec:
   replicas: 3
   selector:
@@ -12,28 +31,18 @@ spec:
       labels:
         app: dnsmax
     spec:
+      subdomain: dnsmax
       dnsPolicy: "None"
       dnsConfig:
         nameservers:
-        - 10.43.68.254
+        - 10.43.141.15 # CoreDNS's svc cluster IP
         searches:
-        - intranet.local  # replace with yours
+        - dnsmax.svc.cluster.local
+        - svc.cluster.local
+        - cluster.local
+        - intranet.local
       containers:
       - name: dnsutils
-        image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
+        image: registry.k8s.io/e2e-test-images/agnhost:2.39
         command: ["sleep", "infinity"]
         imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-
-## A Service is needed for intrapods DNS resolution to work
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: dnsmax
-spec:
-  selector:
-    app: dnsmax 
-  ports:
-    - protocol: TCP
-      port: 8089
