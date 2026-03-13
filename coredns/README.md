@@ -6,6 +6,7 @@ This CoreDNS configuration serves as the primary DNS server for your network or 
 helm repo add coredns https://coredns.github.io/helm
 
 # If your cluster already ships with its own CoreDNS deployment, the ConfigMap already exists but isn't Helm-managed. You need to label/annotate it before Helm can adopt it.
+
 for resource in deployment/coredns service/kube-dns serviceaccount/coredns clusterrole/system:coredns clusterrolebinding/system:coredns; do
   kubectl label $resource -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || \
   kubectl label $resource app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null
