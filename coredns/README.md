@@ -13,7 +13,7 @@ helm install coredns coredns/coredns -n coredns -f helm/values.yaml --create-nam
 
 **endpoint_pod_names** in your Corefile allows for intra pods resolution as follow:
 ```
-podname.servicename.namespacename.svc.intranet.local
+<pod-name>.<subdomain>.<namespace>.svc.<zone>
 ```
 
 ## Notes
