@@ -8,7 +8,7 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-replicaCount: 1
+replicaCount: 3
 
 resources:
   limits:
@@ -44,7 +44,9 @@ prometheus:
 service:
   name: ""
   annotations: {}
-  selector: {}
+  clusterIP: 10.43.141.15
+  selector:
+    k8s-app: coredns-main  # Custom label prevents clashes with other CoreDNS instances
 
 serviceAccount:
   create: false
@@ -136,7 +138,7 @@ extraVolumeMounts: []
 
 extraSecrets: []
 
-k8sAppLabelOverride: "kube-dns"
+k8sAppLabelOverride: "coredns-main" # must match service.selector.k8s-app
 
 customLabels: {}
 
