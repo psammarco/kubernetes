@@ -1,9 +1,16 @@
-## dnsutils StatefulSet application
-- Simply deploy it using kubectl:
-```
-kubectl apply -f client/client.yaml
-```
-# Test intra-pod Domain Name resolution
+# CoreDNS DNS Validation
+
+This simple StatefulSet deploys dnsutils pods to validate our custom CoreDNS deployment by probing inter-pod DNS resolution.
+ 
+## Testing inter-pod Domain Name resolution
+
+Provided our CoreDNS service has deployed successfully, pods should be reachable via:
+
+**<pod-name>.<subdomain>.<namespace>.svc.<zone>**
+
+- podname.pod.debug.svc.cluster.local
+- podname.pod.debug.svc.intranet.local
+
 ```
 pietro@kube-controller-001:~$ for host in dnsutils-0 dnsutils-1 dnsutils-2; do   for domain in cluster.local intranet.local; do     kubectl exec -it dnsutils-0 -n debug -- ping -c1 ${host}.pod.debug.svc.$domain;   done; done
 PING dnsutils-0.pod.debug.svc.cluster.local (10.42.2.12): 56 data bytes
