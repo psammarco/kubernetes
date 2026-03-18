@@ -44,6 +44,7 @@ prometheus:
 service:
   name: ""
   annotations: {}
+  clusterIP: 10.43.141.15
   selector:
     k8s-app: coredns-main  # Custom label prevents clashes with other CoreDNS instances
 
