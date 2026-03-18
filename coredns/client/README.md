@@ -5,8 +5,9 @@ This simple StatefulSet deploys dnsutils pods to validate our custom CoreDNS dep
 ## Testing inter-pod Domain Name resolution
 
 Provided our CoreDNS service has deployed successfully, pods should be reachable via:
-
-**<pod-name>.<subdomain>.<namespace>.svc.<zone>**
+```
+<pod-name>.<subdomain>.<namespace>.svc.<zone>
+```
 
 - podname.pod.debug.svc.cluster.local
 - podname.pod.debug.svc.intranet.local
