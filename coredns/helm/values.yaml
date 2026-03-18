@@ -44,7 +44,8 @@ prometheus:
 service:
   name: ""
   annotations: {}
-  selector: {}
+  selector:
+    k8s-app: coredns-main  # Custom label prevents clashes with other CoreDNS instances
 
 serviceAccount:
   create: false
@@ -136,7 +137,7 @@ extraVolumeMounts: []
 
 extraSecrets: []
 
-k8sAppLabelOverride: "kube-dns"
+k8sAppLabelOverride: "coredns-main" # must match service.selector.k8s-app
 
 customLabels: {}
 
