@@ -8,7 +8,7 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-replicaCount: 1
+replicaCount: 3
 
 resources:
   limits:
