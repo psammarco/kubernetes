@@ -4,7 +4,7 @@ This CoreDNS configuration serves as the primary DNS server for your network or 
 ## Installation
 ```
 helm repo add coredns https://coredns.github.io/helm
-helm install -f helm/values.yaml coredns coredns/coredns -n kube-system
+helm install coredns coredns/coredns -n coredns -f helm/values.yaml --create-namespace
 ```
 
 ## Quick breakdown
