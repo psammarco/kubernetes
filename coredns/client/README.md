@@ -1,4 +1,4 @@
-## Testing dnstools StatefulSet application
+## dnsutils StatefulSet application
 - Simply deploy it using kubectl:
 ```
 kubectl apply -f client/client.yaml
