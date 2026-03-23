@@ -12,9 +12,9 @@ data:
       upstream wireguard {
         zone wireguard 64k;
         hash $remote_addr consistent;
-        server wireguard-0.wireguard.wireguard.svc.cluster.local:51820 resolve;
-        server wireguard-1.wireguard.wireguard.svc.cluster.local:51820 resolve;
-        server wireguard-2.wireguard.wireguard.svc.cluster.local:51820 resolve;
+        server wireguard-0.wg.wireguard.svc.cluster.local:51820 resolve;
+        server wireguard-1.wg.wireguard.svc.cluster.local:51820 resolve;
+        server wireguard-2.wg.wireguard.svc.cluster.local:51820 resolve;
       }
       server {
         listen 51820 udp;
