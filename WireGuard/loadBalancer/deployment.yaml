@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-udp
+  namespace: wireguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-udp
+  template:
+    metadata:
+      labels:
+        app: nginx-udp
+    spec:
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.43.141.15
+        searches:
+          - wireguard.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+      nodeSelector:
+        kubernetes.io/hostname: kube-controller-003
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 51820
+          protocol: UDP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-udp-config

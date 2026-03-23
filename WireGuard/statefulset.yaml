@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wireguard
+  namespace: wireguard
+spec:
+  replicas: 3
+  serviceName: wireguard
+  selector:
+    matchLabels:
+      app: wireguard
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      subdomain: wg
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.43.141.15
+        searches:
+          - wireguard.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+      nodeSelector:
+        wireguard: "true"
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: wireguard
+      containers:
+      - name: wireguard
+        image: alpine:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          apk add -q wireguard-tools iptables tcpdump && wg-quick up wg0 && tail -f /dev/null
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+              - SYS_MODULE
+        volumeMounts:
+        - name: config
+          mountPath: /etc/wireguard/wg0.conf
+          subPath: wg0.conf
+          readOnly: true
+        - name: kernel-modules
+          mountPath: /lib/modules
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: wg-config
+      - name: kernel-modules
+        hostPath:
+          path: /lib/modules
