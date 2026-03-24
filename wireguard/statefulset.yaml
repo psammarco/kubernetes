@@ -38,7 +38,10 @@ spec:
         - /bin/sh
         - -c
         - |
-          apk add -q wireguard-tools iptables tcpdump && wg-quick up wg0 && tail -f /dev/null
+          apk add -q wireguard-tools iptables tcpdump dnsmasq && \
+          wg-quick up wg0 && \
+          dnsmasq --no-daemon --interface=wg0 --bind-interfaces --server=10.43.141.15 &
+          tail -f /dev/null
         securityContext:
           capabilities:
             add:
