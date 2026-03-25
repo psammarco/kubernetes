@@ -9,11 +9,11 @@ data:
     PrivateKey = QGYtRyvm9NlG8gZsQb6AdCTQRtRJQDj1D3WXjcgmRlY=
     Address = 10.100.0.1/24
     ListenPort = 51820
-    MTU = 1380
+    MTU = 1420
     PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING ! -o wg0 -j MASQUERADE
     PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING ! -o wg0 -j MASQUERADE
-
-    # Pietro iPhone
+    
+    # Pietro zFold 7
     [Peer]
     PublicKey = AXnIFktihpzxfeXcPTVGLY9FI9ZFQ8jtiWKWN2l3pXk=
     AllowedIPs = 10.100.0.2/32
